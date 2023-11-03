@@ -48,7 +48,7 @@ app.use('/product', productRoutes);
 // app.use('/logger', loggerRoutes);
 
 app.use((req, res, next) => {
-    const error = new Error(' error Not found v2');
+    const error = new Error(' error Not found v002');
     error.status = 404;
     next(error);
 });
