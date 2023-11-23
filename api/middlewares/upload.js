@@ -4,7 +4,7 @@ const fs = require('fs');
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
     console.log(req)
-    const path = `./uploads/${req.params.category}/${req.params.id}`;
+    const path = `./uploads/${req.params.id}`;
     // fs.mkdirSync(path, { recursive: true })
     fs.mkdir(path, err => cb(null, path));
   },
@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 });
 
 const imageFileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'||file.mimetype === 'image/webp'||file.mimetype === 'image/jpg') {
     cb(null, true);
   } else {
     cb(null, false);

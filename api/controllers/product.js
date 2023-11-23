@@ -190,9 +190,6 @@ exports.getAllPaginate = (req, res, next) => {
 };
 
 
-
-
-
 exports.updateImage = (req, res, next) => {
   const _id = req.params.id;
   const category = req.params.category;
@@ -206,7 +203,7 @@ exports.updateImage = (req, res, next) => {
     if (req.body.position === 0 || req.body.position && req.file) {
       const body = {
         position: req.body.position,
-        image: `uploads/${category}/${_id}/${req.file.filename}`//'/uploads/' + req.file.filename
+        image: `uploads/${_id}/${req.file.filename}`//'/uploads/' + req.file.filename
       };
       if (images.length > body.position) {
         console.log('if', images);
@@ -236,6 +233,49 @@ exports.updateImage = (req, res, next) => {
 };
 
 
+// exports.updateImage = async (req, res, next) => {
+//   const productId = req.params.id;
+
+//   try {
+//     // Verificar si req.file existe y es una imagen
+//     if (!req.file || !req.file.mimetype.startsWith('image/')) {
+//       return res.status(400).json({ message: 'Invalid image file!' });
+//     }
+
+//     // Obtener el producto por su ID
+//     const product = await Product.findById(productId);
+
+//     if (!product) {
+//       return res.status(404).json({ message: 'Product not found!' });
+//     }
+
+//     let images = product.images || [];
+
+//     const newPosition = req.body.position || 0;
+
+//     // Verificar si la posición es válida
+//     if (newPosition < 0 || newPosition > images.length) {
+//       return res.status(400).json({ message: 'Invalid position!' });
+//     }
+
+//     const newImage = `uploads/${productId}/${req.file.filename}`;
+
+//     // Actualizar la posición de la imagen
+//     images.splice(newPosition, 0, newImage);
+
+//     // Actualizar el producto con las nuevas imágenes
+//     const updatedProduct = await Product.findByIdAndUpdate(
+//       productId,
+//       { images: images },
+//       { new: true }
+//     );
+
+//     res.status(200).json({ image: updatedProduct.images[newPosition] });
+//   } catch (error) {
+//     console.error('Error updating image:', error);
+//     res.status(500).json({ error: 'Internal Server Error DJ' });
+//   }
+// };
 // Importa el modelo de Producto si es necesario
 // const Product = require('../models/Product');
 

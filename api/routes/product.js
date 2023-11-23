@@ -16,7 +16,10 @@ router.put("/:id", ProductController.update);
 
 router.delete("/:id", ProductController.delete);
 
-router.put("/:category/:id/image", upload.image.single('image'), ProductController.updateImage);
+// router.put("/:category/:id/image", upload.image.single('image'), ProductController.updateImage);
+
+router.put("/upload-image/:id", upload.image.single('image'), ProductController.updateImage);
+
 
 router.get("/category/:id", ProductController.getByCategory);
 
