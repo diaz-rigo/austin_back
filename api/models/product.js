@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const productSchema = mongoose.Schema({
@@ -22,6 +21,8 @@ const productSchema = mongoose.Schema({
     isFeatured: { type: Boolean, default: false }, // Indica si el producto es destacado
     isVegetarian: { type: Boolean, default: false }, // Indica si el producto es vegetariano
     isGlutenFree: { type: Boolean, default: false }, // Indica si el producto es libre de gluten
+    createdAt: { type: Date, default: Date.now }
+
 }, { versionKey: false });
 
 module.exports = mongoose.model('Product', productSchema);

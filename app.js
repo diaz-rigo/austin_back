@@ -11,7 +11,7 @@ const productRoutes = require('./api/routes/product');
 // const makerRoutes = require('./api/routes/maker');
 // const minewRoutes = require('./api/routes/minew');
 // const loggerRoutes = require('./api/routes/logger');
-// const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/e-commerce-covid?retryWrites=true&w=majority'
+
 const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/'
     mongoose.connect(url, {
     useUnifiedTopology: true,
@@ -36,7 +36,7 @@ app.use((req, res, next) => {
     next();
 }); 
 
-// app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads'));
 app.use(express.json());
 
 app.use('/auth', authRoutes);
