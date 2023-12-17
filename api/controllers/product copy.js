@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 const Product = require("../models/product");
 const path = require('path');
-// const path = require('path');
-
 const fs = require('fs');
+// const fs = require('fs');
 const objectId = new mongoose.Types.ObjectId();
 
 
@@ -70,118 +69,6 @@ exports.create = (req, res, next) => {
 };
 
 
-exports.updateImage = async (req, res, next) => {
-  try {
-    const _id = req.params.id;
-    const category = req.params.category;
-
-    // Utiliza await para esperar la resolución de la promesa
-    const response = await Product.findById(_id).exec();
-    console.log('product find', response);
-
-    if (!response) {
-      return res.status(404).json({ message: "Error: Product not found" });
-    }
-
-    let images = response.images;
-
-    console.log('find', images);
-    console.log(`req.position: ${req.body.position}, req.file: ${req.file.filename}`);
-
-    if (req.body.position === 0 || (req.body.position && req.file)) {
-      const body = {
-        position: req.body.position,
-        image: `uploads/${category}/${_id}/${req.file.filename}`
-      };
-
-      if (images.length > body.position) {
-        console.log('if', images);
-        images[body.position] = body.image;
-      } else {
-        console.log('else', images);
-        images.push(body.image);
-      }
-    } else {
-      return res.status(400).json({ message: "Error: Invalid request" });
-    }
-
-    console.log('set', images);
-
-    // Utiliza await para esperar la resolución de la actualización
-    const updatedProduct = await Product.findOneAndUpdate(
-      { _id: _id },
-      { $set: { images: images } },
-      { new: true }
-    ).exec();
-
-    console.log('update', images);
-
-    res.status(200).json({
-      image: updatedProduct
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: error.message || "Internal Server Error" });
-  }
-};
-
-
-// ... (existing code)
-// New route for deleting an image
-exports.deleteImage = async (req, res, next) => {
-  const productId = req.params.id;
-  const imageName = req.params.imageName;
-
-  try {
-    const product = await Product.findById(productId).exec();
-
-    if (!product) {
-      return res.status(404).json({ message: "Error: Product not found" });
-    }
-    // Remove the image from the images array
-    const updatedImages = product.images.filter(image => path.basename(image) !== imageName);
-
-    // Update the product with the new images array
-    const updatedProduct = await Product.findOneAndUpdate(
-      { _id: productId },
-      { $set: { images: updatedImages } },
-      { new: true }
-    ).exec();
-
-    const imagePath = path.join(__dirname, '..', '..', 'uploads', product.category, productId, imageName);
-
-    // const imagePath = path.join(__dirname, '..', 'uploads', product.category, productId, imageName);
-    console.log('Image Path:', imagePath);
-
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
-    } else {
-      return res.status(404).json({ message: "Error: Image file not found on the server" });
-    }
-
-    res.status(200).json({ message: "Image deleted successfully", updatedProduct });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: error.message || "Internal Server Error" });
-  }
-};
-
-exports.updateProductStatus = (req, res, next) => {
-  const productId = req.params.productId;
-  const newStatus = req.body.status; // Se espera que el nuevo estado esté en el cuerpo de la solicitud
-
-  Product.findByIdAndUpdate(productId, { status: newStatus })
-    .then(updatedProduct => {
-      res.status(200).json(updatedProduct); // Devuelve el producto actualizado
-    })
-    .catch(error => {
-      res.status(500).json({ error: "Error al actualizar el estado del producto" });
-    });
-  // En caso de éxito, enviar una respuesta 200 OK
-  res.status(200).json({ message: "Estado del producto actualizado exitosamente" });
-  // En caso de error, enviar una respuesta de error, por ejemplo:
-  res.status(500).json({ error: "Error al actualizar el estado del producto" });
-};
 
 
 
@@ -296,4 +183,140 @@ exports.getAllPaginate = (req, res, next) => {
     .catch(err => {
       res.status(500).json({ error: err });
     });
+};
+
+
+
+
+// exports.updateImage = async (req, res, next) => {
+//   const productId = req.params.id;
+
+//   try {
+//     // Verificar si req.file existe y es una imagen
+//     if (!req.file || !req.file.mimetype.startsWith('image/')) {
+//       return res.status(400).json({ message: 'Invalid image file!' });
+//     }
+
+//     // Obtener el producto por su ID
+//     const product = await Product.findById(productId);
+
+//     if (!product) {
+//       return res.status(404).json({ message: 'Product not found!' });
+//     }
+
+//     let images = product.images || [];
+
+//     const newPosition = req.body.position || 0;
+
+//     // Verificar si la posición es válida
+//     if (newPosition < 0 || newPosition > images.length) {
+//       return res.status(400).json({ message: 'Invalid position!' });
+//     }
+
+//     const newImage = `uploads/${productId}/${req.file.filename}`;
+
+//     // Actualizar la posición de la imagen
+//     images.splice(newPosition, 0, newImage);
+
+//     // Actualizar el producto con las nuevas imágenes
+//     const updatedProduct = await Product.findByIdAndUpdate(
+//       productId,
+//       { images: images },
+//       { new: true }
+//     );
+
+//     res.status(200).json({ image: updatedProduct.images[newPosition] });
+//   } catch (error) {
+//     console.error('Error updating image:', error);
+//     res.status(500).json({ error: 'Internal Server Error DJ' });
+//   }
+// };
+
+
+exports.updateImage = async (req, res, next) => {
+  const _id = req.params.id;
+
+  try {
+    const response = await Product.findById(_id).exec();
+
+    if (!response) {
+      return res.status(404).json({ message: 'Error: Product not found!' });
+    }
+
+    // Verifica si el archivo se subió correctamente
+    if (!req.file) {
+      return res.status(400).json({ message: 'Error: No file uploaded!' });
+    }
+
+    const imagePath = `uploads/${_id}/${req.file.filename}`;
+
+    // Agrega la nueva ruta de imagen al array de imágenes
+    response.images.push(imagePath);
+
+    // Actualiza la imagen en la base de datos
+    const updatedProduct = await response.save();
+
+    res.status(200).json({
+      image: updatedProduct
+    });
+  } catch (err) {
+    console.error('Error updating images:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+
+
+exports.updateProductStatus = (req, res, next) => {
+  const productId = req.params.productId;
+  const newStatus = req.body.status; // Se espera que el nuevo estado esté en el cuerpo de la solicitud
+
+  Product.findByIdAndUpdate(productId, { status: newStatus })
+    .then(updatedProduct => {
+      res.status(200).json(updatedProduct); // Devuelve el producto actualizado
+    })
+    .catch(error => {
+      res.status(500).json({ error: "Error al actualizar el estado del producto" });
+    });
+
+  // En caso de éxito, enviar una respuesta 200 OK
+  res.status(200).json({ message: "Estado del producto actualizado exitosamente" });
+
+  // En caso de error, enviar una respuesta de error, por ejemplo:
+  res.status(500).json({ error: "Error al actualizar el estado del producto" });
+};
+
+
+exports.uploadImage = async (req, res, next) => {
+  const productId = req.params.id;
+
+  try {
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Error: Product not found!' });
+    }
+
+    // Verifica si el archivo se subió correctamente
+    if (!req.file) {
+      return res.status(400).json({ message: 'Error: No file uploaded!' });
+    }
+
+    const imagePath = `uploads/${productId}/${req.file.filename}`;
+
+    // Agrega la nueva ruta de imagen al array de imágenes
+    product.images.push(imagePath);
+
+    // Actualiza el producto en la base de datos
+    const updatedProduct = await product.save();
+
+    res.status(200).json({
+      image: updatedProduct.images[updatedProduct.images.length - 1] // Devuelve la última imagen agregada
+    });
+  } catch (err) {
+    console.error('Error uploading image:', err);
+    res.status(500).json({ error: err.message });
+  }
 };

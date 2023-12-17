@@ -16,9 +16,10 @@ router.put("/:id", ProductController.update);
 
 router.delete("/:id", ProductController.delete);
 
+// router.put("/:category/:id/image", upload.image.single('image'), ProductController.updateImage);
 
-
-router.put("/:category/:id/image", upload.image.single('image'), ProductController.updateImage);
+router.put("/upload-image/:id", upload.image.single('image'), ProductController.updateImage);
+// router.put("/upload-image/:id", upload.image.single('image'), ProductController.updateImage);
 
 
 router.get("/category/:id", ProductController.getByCategory);
@@ -29,10 +30,14 @@ router.post("/page/:limit/:skip", ProductController.getAllPaginate);
 
 
 router.put("/:productId/status", ProductController.updateProductStatus);
+// router.put('/:id/image', ProductController.updateImage);
 
 
-// Add the new route for deleting an image
-router.delete('/:id/:imageName', ProductController.deleteImage);
+// router.put("/:id", idProtected, ProductController.update);
+
+// router.delete("/:id", idProtected, ProductController.delete);
+
+// router.put("/:id/image", idProtected, upload.image.single('image'), ProductController.updateImage);
 
 
 module.exports = router;
