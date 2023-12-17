@@ -1,4 +1,4 @@
-> Why do I have a folder named ".vercel" in my project?
+> Why do I have a folder named ".vercel" in my project??
 The ".vercel" folder is created when you link a directory to a Vercel project.
 
 > What does the "project.json" file contain?
