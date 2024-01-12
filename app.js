@@ -48,7 +48,7 @@ app.use('/product', productRoutes);
 // app.use('/logger', loggerRoutes);
 
 app.use((req, res, next) => {
-    const error = new Error(' error Not found 2024 01');
+    const error = new Error(' error Not found 12 01 2024');
     error.status = 404;
     next(error);
 });
