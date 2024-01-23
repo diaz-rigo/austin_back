@@ -13,4 +13,9 @@ router.put("/:id", UserController.update);
 
 router.delete("/:id", UserController.delete);
 
+
+// Ruta para la verificación de correo electrónico
+// router.get("/verify/:token", UserController.verifyEmail);
+
+
 module.exports = router;

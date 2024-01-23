@@ -1,10 +1,80 @@
 const mongoose = require("mongoose");
 const Product = require("../models/product");
 const path = require('path');
+
 // const path = require('path');
 
 const fs = require('fs');
 const objectId = new mongoose.Types.ObjectId();
+
+
+
+
+
+
+exports.updateImage = async (req, res, next) => {
+  try {
+    const _id = req.params.id;
+    const category = req.params.category;
+
+    // Utiliza await para esperar la resolución de la promesa
+    const response = await Product.findById(_id).exec();
+    console.log('product find', response);
+
+    if (!response) {
+      return res.status(404).json({ message: "Error: Product not found" });
+    }
+
+    let images = response.images;
+
+    console.log('find', images);
+    console.log(`req.position: ${req.body.position}, req.file: ${req.file.filename}`);
+
+    if (req.body.position === 0 || (req.body.position && req.file)) {
+      const body = {
+        position: req.body.position,
+        image: `uploads/${category}/${_id}/${req.file.filename}`
+      };
+
+      if (images.length > body.position) {
+        console.log('if', images);
+        images[body.position] = body.image;
+      } else {
+        console.log('else', images);
+        images.push(body.image);
+      }
+    } else {
+      return res.status(400).json({ message: "Error: Invalid request" });
+    }
+
+    console.log('set', images);
+
+    // Utiliza await para esperar la resolución de la actualización
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: _id },
+      { $set: { images: images } },
+      { new: true }
+    ).exec();
+
+    console.log('update', images);
+
+    res.status(200).json({
+      image: updatedProduct
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: error.message || "Internal Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+
 
 
 exports.getAll = (req, res, next) => {
@@ -70,61 +140,6 @@ exports.create = (req, res, next) => {
 };
 
 
-exports.updateImage = async (req, res, next) => {
-  try {
-    const _id = req.params.id;
-    const category = req.params.category;
-
-    // Utiliza await para esperar la resolución de la promesa
-    const response = await Product.findById(_id).exec();
-    console.log('product find', response);
-
-    if (!response) {
-      return res.status(404).json({ message: "Error: Product not found" });
-    }
-
-    let images = response.images;
-
-    console.log('find', images);
-    console.log(`req.position: ${req.body.position}, req.file: ${req.file.filename}`);
-
-    if (req.body.position === 0 || (req.body.position && req.file)) {
-      const body = {
-        position: req.body.position,
-        image: `uploads/${category}/${_id}/${req.file.filename}`
-      };
-
-      if (images.length > body.position) {
-        console.log('if', images);
-        images[body.position] = body.image;
-      } else {
-        console.log('else', images);
-        images.push(body.image);
-      }
-    } else {
-      return res.status(400).json({ message: "Error: Invalid request" });
-    }
-
-    console.log('set', images);
-
-    // Utiliza await para esperar la resolución de la actualización
-    const updatedProduct = await Product.findOneAndUpdate(
-      { _id: _id },
-      { $set: { images: images } },
-      { new: true }
-    ).exec();
-
-    console.log('update', images);
-
-    res.status(200).json({
-      image: updatedProduct
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: error.message || "Internal Server Error" });
-  }
-};
-
 
 // ... (existing code)
 // New route for deleting an image
@@ -165,6 +180,7 @@ exports.deleteImage = async (req, res, next) => {
     res.status(500).json({ error: error.message || "Internal Server Error" });
   }
 };
+
 
 exports.updateProductStatus = (req, res, next) => {
   const productId = req.params.productId;
