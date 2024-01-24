@@ -128,7 +128,7 @@ exports.verifyEmail = async (req, res) => {
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
-    res.redirect('https://austins.vercel.app/auth/success'); // Cambia la URL según tu aplicación
+    res.redirect('https://austins.vercel.app'); // Cambia la URL según tu aplicación
 
     // return res.status(200).json({ message: 'Correo electrónico verificado con éxito.' });
   } catch (error) {
