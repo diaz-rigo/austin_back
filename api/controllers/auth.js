@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-
 "use strict";
 const nodemailer = require("nodemailer");
 
@@ -60,14 +59,28 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // Válido por 24 horas
     await user.save();
 
-    // Enviar el correo electrónico de verificación utilizando Nodemailer
+
     const mailOptions = {
-      // from: '"Fred Foo 👻" <foo@example.com>',
-      from: '"Fred Foo 👻" <morelosalfaro@gmail.com>',
+      from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
       to: user.email,
-      subject: 'Verificación de Correo Electrónico',
-      html: `<p>¡Gracias por registrarte! Haz clic en el siguiente enlace para verificar tu correo electrónico:</p><p><a href="http://localhost:3000/auth/verify/${verificationToken}">Verificar correo electrónico</a></p>`,
+      subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
+      html: `
+        <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; padding: 20px;">
+              <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
+            </div>
+            <div style="text-align: center; padding: 20px;">
+              <h2 style="font-size: 24px; color: #333;">¡Gracias por registrarte en Pastelería Austin's!</h2>
+              <p style="color: #555; font-size: 16px;">Haz clic en el siguiente enlace para verificar tu correo electrónico y comenzar a disfrutar de nuestros servicios:</p>
+              <a href="https://austin-b.onrender.com/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Verificar correo electrónico</a>
+            </div>
+            <p style="text-align: center; color: #777; font-size: 14px;">Si no has solicitado este correo, puedes ignorarlo de manera segura.</p>
+          </div>
+        </div>
+      `,
     };
+    
 
     await transporter.sendMail(mailOptions);
 
@@ -115,8 +128,9 @@ exports.verifyEmail = async (req, res) => {
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
+    res.redirect('http://localhost:4200/auth/success'); // Cambia la URL según tu aplicación
 
-    return res.status(200).json({ message: 'Correo electrónico verificado con éxito.' });
+    // return res.status(200).json({ message: 'Correo electrónico verificado con éxito.' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Error interno del servidor.' });
