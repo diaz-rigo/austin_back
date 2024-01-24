@@ -73,7 +73,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
             <div style="text-align: center; padding: 20px;">
               <h2 style="font-size: 24px; color: #333;">¡Gracias por registrarte en Pastelería Austin's!</h2>
               <p style="color: #555; font-size: 16px;">Haz clic en el siguiente enlace para verificar tu correo electrónico y comenzar a disfrutar de nuestros servicios:</p>
-              <a href="https://austin-b.onrender.com/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Verificar correo electrónico</a>
+              <a href="https://austin-b.onrender.com/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Verificar correo electrónico</a>
             </div>
             <p style="text-align: center; color: #777; font-size: 14px;">Si no has solicitado este correo, puedes ignorarlo de manera segura.</p>
           </div>
