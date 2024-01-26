@@ -7,7 +7,7 @@ const User = require('../models/user');
 "use strict";
 const nodemailer = require("nodemailer");
 
-
+// {"message":"Token de verificación no válido."}
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -100,9 +100,7 @@ function generateVerificationToken(savedUser) {
   const payload = {
     userId: savedUser._id,
   };
-
   const verificationToken = jwt.sign(payload, secretKey, { expiresIn });
-
   return verificationToken;
 }
 
@@ -115,11 +113,13 @@ exports.verifyEmail = async (req, res) => {
 
     if (!user) {
       // Token no válido o usuario no encontrado
-      return res.status(400).json({ message: 'Token de verificación no válido.' });
+      // return res.status(400).json({ message: 'Token de verificación no válido.' });
+      res.redirect('https://austins.vercel.app/auth/error-verificacion'); 
     }
 
     if (user.emailVerificationExpires < Date.now()) {
       // Token expirado
+      
       return res.status(400).json({ message: 'El token de verificación ha expirado.' });
     }
 
@@ -128,7 +128,8 @@ exports.verifyEmail = async (req, res) => {
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
-    res.redirect('https://austins.vercel.app'); // Cambia la URL según tu aplicación
+    // res.redirect('https://austins.vercel.app'); // Cambia la URL según tu aplicación
+    res.redirect('https://austins.vercel.app/auth/success'); // Cambia la URL según tu aplicación
 
     // return res.status(200).json({ message: 'Correo electrónico verificado con éxito.' });
   } catch (error) {
