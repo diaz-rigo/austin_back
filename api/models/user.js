@@ -11,9 +11,9 @@ const userSchema = mongoose.Schema({
     password: { type: String, required: true },
     rol: { type: String, required: true, default: 'CLIENT' },
     name: { type: String, required: true },
-    maternalLastname: { type: String }, // Nuevo campo de apellido materno
-    paternalLastname: { type: String }, // Nuevo campo de apellido paterno
-    phone: { type: String }, // Nuevo campo de teléfono
+    maternalLastname: { type: String },
+    paternalLastname: { type: String },
+    phone: { type: String },
     status: { type: String, required: true, default: 'ACTIVE' },
     address: { type: String },
     city: { type: String },
@@ -22,9 +22,11 @@ const userSchema = mongoose.Schema({
     securityQuestion: { type: String },
     securityAnswer: { type: String },
     emailVerificationToken: { type: String },
-    emailVerificationExpires: { type: Date },
+    emailVerificationExpires: { type: Date },  // Agrega este campo para la fecha de expiración del código de verificación
     resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date }
+    resetPasswordExpires: { type: Date },
+    verificationCode: { type: String },  // Agrega este campo para el código de verificación
+    verificationCodeExpires: { type: Date },  // Agrega este campo para la fecha de expiración del código de verificación
 }, { versionKey: false });
 
 module.exports = mongoose.model('User', userSchema);

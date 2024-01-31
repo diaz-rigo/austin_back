@@ -4,10 +4,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
+const crypto = require('crypto');
+
 "use strict";
 const nodemailer = require("nodemailer");
-
-// {"message":"Token de verificación no válido."}
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -18,6 +18,134 @@ const transporter = nodemailer.createTransport({
     pass: "vvakuhsjgsjulxnb",
   },
 });
+
+
+
+// {"message":"Token de verificación no válido."}
+function generateVerificationCode() {
+  // Generar un código de verificación, por ejemplo, un número aleatorio de 6 dígitos
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+
+async function saveVerificationCode(user, verificationCode) {
+  try {
+    console.log('Usuario antes de guardar:', user);
+    user.verificationCode = verificationCode;
+    user.verificationCodeExpires = Date.now() + 5 * 60 * 1000; // Válido por 5 minutos
+    await user.save();
+    console.log('Usuario después de guardar:', user);
+  } catch (error) {
+    console.error('Error al guardar el código de verificación:', error);
+  }
+}
+
+
+
+async function sendRecoveryEmailWithCode(user, verificationCode) {
+  const mailOptions = {
+    from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
+    to: user.email,
+    subject: 'Recuperación de Contraseña - Pastelería Austin\'s',
+    html: `
+      <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; padding: 20px;">
+            <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
+          </div>
+          <div style="text-align: center; padding: 20px;">
+            <h2 style="font-size: 24px; color: #333;">Recuperación de Contraseña</h2>
+            <p style="color: #555; font-size: 16px;">Hemos recibido una solicitud para restablecer tu contraseña. Utiliza el siguiente código para completar el proceso:</p>
+            <p style="font-size: 32px; color: #ff5733; font-weight: bold;">${verificationCode}</p>
+          </div>
+          <p style="text-align: center; color: #777; font-size: 14px;">Si no has solicitado este cambio, por favor ignora este correo electrónico.</p>
+        </div>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+
+exports.requestPasswordRecovery = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    const verificationCode = generateVerificationCode();
+
+    // Guardar el código de verificación en el usuario
+    await saveVerificationCode(user, verificationCode);
+
+    // Enviar correo de recuperación de contraseña con el código de verificación
+    await sendRecoveryEmailWithCode(user, verificationCode);
+
+    res.status(200).json({ message: 'Correo de recuperación de contraseña enviado correctamente.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+};
+
+exports.verifyCodeAndResetPassword = async (req, res) => {
+  try {
+    const { email, verificationCode, newPassword } = req.body;
+    console.log(email, verificationCode, newPassword)
+    const user = await User.findOne({ email, verificationCode });
+
+    if (!user || user.verificationCodeExpires < Date.now()) {
+      return res.status(400).json({ message: 'Código de verificación no válido o ha expirado.' });
+    }
+
+    // Actualizar la contraseña y limpiar el código de verificación
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.verificationCode = undefined;
+    user.verificationCodeExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Contraseña restablecida con éxito.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno del servidor.', details: error.message || error, stack: error.stack });
+  }
+  
+};
+
+
+
+exports.verificationcode = async (req, res) => {
+  try {
+    const { email, verificationCode } = req.body;
+
+    // Buscar al usuario por correo electrónico y código de verificación
+    const user = await User.findOne({ email, verificationCode });
+
+    if (!user || user.verificationCodeExpires < Date.now()) {
+      return res.status(400).json({ message: 'Código de verificación no válido o ha expirado.' });
+    }
+
+    // Limpiar el código de verificación (puedes omitir esto si no lo necesitas)
+    // user.verificationCode = undefined;
+    // user.verificationCodeExpires = undefined;
+    // await user.save();
+
+    res.status(200).json({ message: 'Código de verificación verificado con éxito.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+};
+
+
+
+
 
 exports.signUpAndVerifyEmail = async (req, res, next) => {
   try {
@@ -190,3 +318,4 @@ exports.signIn = (req, res, next) => {
       });
     });
 };
+
