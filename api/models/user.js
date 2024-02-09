@@ -27,6 +27,9 @@ const userSchema = mongoose.Schema({
     resetPasswordExpires: { type: Date },
     verificationCode: { type: String },  // Agrega este campo para el código de verificación
     verificationCodeExpires: { type: Date },  // Agrega este campo para la fecha de expiración del código de verificación
+    
+    loginAttempts: { type: Number, default: 0 },  // Contador de intentos de inicio de sesión fallidos
+    lockoutUntil: { type: Date },  // Fecha hasta la cual la cuenta está bloqueada temporalmente
 }, { versionKey: false });
 
 module.exports = mongoose.model('User', userSchema);
