@@ -349,6 +349,7 @@ exports.signIn = async (req, res, next) => {
         const lockoutDuration = 30 * 60 * 1000; // 30 minutos en milisegundos
         user.lockoutUntil = new Date(Date.now() + lockoutDuration);
         await user.save();
+        
         const mailOptions = {
           from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
           to: user.email,
