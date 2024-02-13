@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const crypto = require('crypto');
+const MAX_LOGIN_ATTEMPTS = 5; // Define el número máximo de intentos de inicio de sesión permitidos antes de bloquear la cuenta del usuario
 
 "use strict";
 const nodemailer = require("nodemailer");
@@ -184,27 +185,6 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     await user.save();
 
 
-    // const mailOptions = {
-    //   from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
-    //   to: user.email,
-    //   subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
-    //   html: `
-    //     <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
-    //       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
-    //         <div style="text-align: center; padding: 20px;">
-    //           <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
-    //         </div>
-    //         <div style="text-align: center; padding: 20px;">
-    //           <h2 style="font-size: 24px; color: #333;">¡Gracias por registrarte en Pastelería Austin's!</h2>
-    //           <p style="color: #555; font-size: 16px;">Haz clic en el siguiente enlace para verificar tu correo electrónico y comenzar a disfrutar de nuestros servicios:</p>
-    //           <a href="https://austin-b.onrender.com/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Verificar correo electrónico</a>
-    //         </div>
-    //         <p style="text-align: center; color: #777; font-size: 14px;">Si no has solicitado este correo, puedes ignorarlo de manera segura.</p>
-    //       </div>
-    //     </div>
-    //   `,
-    // };
-
     const mailOptions = {
       from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
       to: user.email,
@@ -218,13 +198,34 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
             <div style="text-align: center; padding: 20px;">
               <h2 style="font-size: 24px; color: #333;">¡Gracias por registrarte en Pastelería Austin's!</h2>
               <p style="color: #555; font-size: 16px;">Haz clic en el siguiente enlace para verificar tu correo electrónico y comenzar a disfrutar de nuestros servicios:</p>
-              <a href="http://localhost:3000/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Verificar correo electrónico</a>
+              <a href="https://austin-b.onrender.com/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Verificar correo electrónico</a>
             </div>
             <p style="text-align: center; color: #777; font-size: 14px;">Si no has solicitado este correo, puedes ignorarlo de manera segura.</p>
           </div>
         </div>
       `,
     };
+
+    // const mailOptions = {
+    //   from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
+    //   to: user.email,
+    //   subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
+    //   html: `
+    //     <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
+    //       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
+    //         <div style="text-align: center; padding: 20px;">
+    //           <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
+    //         </div>
+    //         <div style="text-align: center; padding: 20px;">
+    //           <h2 style="font-size: 24px; color: #333;">¡Gracias por registrarte en Pastelería Austin's!</h2>
+    //           <p style="color: #555; font-size: 16px;">Haz clic en el siguiente enlace para verificar tu correo electrónico y comenzar a disfrutar de nuestros servicios:</p>
+    //           <a href="http://localhost:3000/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Verificar correo electrónico</a>
+    //         </div>
+    //         <p style="text-align: center; color: #777; font-size: 14px;">Si no has solicitado este correo, puedes ignorarlo de manera segura.</p>
+    //       </div>
+    //     </div>
+    //   `,
+    // };
     
 
     await transporter.sendMail(mailOptions);
@@ -286,7 +287,8 @@ exports.verifyEmail = async (req, res) => {
       { expiresIn: '5h' }
     );
     // Redirigir al usuario con el token de autenticación incluido en la URL
-    return res.redirect(`http://localhost:4200/auth/success?token=${authToken}`);
+    // return res.redirect(`http://localhost:4200/auth/success?token=${authToken}`);
+    return res.redirect(`https://austins.vercel.app/auth/success?token=${authToken}`);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Error interno del servidor.' });
@@ -294,52 +296,80 @@ exports.verifyEmail = async (req, res) => {
 };
 
 
-exports.signIn = (req, res, next) => {
-  const { email } = req.body;
-  User.find({ email })
-    .exec()
-    .then(user => {
-      if (user.length < 1) {
-        return res.status(409).json({
-          message: `El correo ${email} no se encuetra registrado`
-        });
-      }
-      bcrypt.compare(req.body.password, user[0].password, (err, result) => {
-        console.log(user[0].password);
+exports.signIn = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: `El correo ${email} no se encuentra registrado` });
+    }
+
+    // Verificar si la cuenta está bloqueada temporalmente
+    if (user.lockoutUntil && user.lockoutUntil > new Date()) {
+      return res.status(403).json({ message: 'La cuenta está bloqueada temporalmente. Por favor, inténtalo de nuevo más tarde.' });
+    }
+
+    // Utilizar una promesa para bcrypt.compare
+    const result = await new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, result) => {
         if (err) {
-          return res.status(500).json({
-            message: "Error Interno, en la validación de la contraseña"
-          });
+          reject(err);
+        } else {
+          resolve(result);
         }
-        if (result) {
-          const payload = {
-            email: user[0].email,
-            id: user[0]._id,
-            name: user[0].name,
-            lastname: user[0].lastname,
-            rol: user[0].rol
-          };
-          const token = jwt.sign(
-            payload,
-            process.env.JWT_KEY,
-            { expiresIn: "5h" }
-          );
-          console.log(token)
-          return res.status(200).json({
-            token: token
-          });
-        }
-        res.status(404).json({
-          message: `La contraseña ingresada es incorrecta `
-        });
-      });
-    })
-    .catch(err => {
-      res.status(500).json({
-        message: 'Error Interno',
-        error: err,
-        code: 201
       });
     });
+
+    if (result) {
+      // Restablecer el contador de intentos de inicio de sesión fallidos
+      user.loginAttempts = 0;
+      user.lockoutUntil = null; // Restablecer el bloqueo temporal
+      await user.save();
+      // Generar y devolver el token de autenticación
+      const token = generateAuthToken(user);
+      return res.status(200).json({ token });
+    } else {
+      // Incrementar el contador de intentos de inicio de sesión fallidos
+      user.loginAttempts++;
+      await user.save();
+      // Verificar si se ha excedido el límite de intentos de inicio de sesión
+      if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        // Bloquear temporalmente la cuenta por un periodo de tiempo (por ejemplo, 30 minutos)
+        const lockoutDuration = 30 * 60 * 1000; // 30 minutos en milisegundos
+        user.lockoutUntil = new Date(Date.now() + lockoutDuration);
+        await user.save();
+
+        return res.status(403).json({ message: 'Se ha excedido el límite de intentos de inicio de sesión. La cuenta ha sido bloqueada temporalmente.' });
+      } else {
+        return res.status(404).json({ message: 'La contraseña ingresada es incorrecta' });
+      }
+    }
+  } catch (error) {
+    console.error('Error en la autenticación:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
 };
 
+
+
+function generateAuthToken(user) {
+  if (!user) {
+    throw new Error('No se ha encontrado ningún usuario');
+  }
+
+  const payload = {
+    email: user.email,
+    id: user._id,
+    name: user.name,
+    lastname: user.lastname,
+    rol: user.rol
+    // Otros datos del usuario que desees incluir en el token
+  };
+
+  const secretKey = process.env.JWT_KEY;
+  const expiresIn = '5h'; // El token expira en 5 horas, puedes ajustar esto según tus necesidades
+
+  return jwt.sign(payload, secretKey, { expiresIn });
+}

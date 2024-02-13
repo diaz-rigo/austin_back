@@ -10,13 +10,22 @@ const MAX_LOGIN_ATTEMPTS = 5; // Define el número máximo de intentos de inicio
 "use strict";
 const nodemailer = require("nodemailer");
 
+// const transporter = nodemailer.createTransport({
+//   host: "smtp.gmail.com",
+//   port: 465,
+//   secure: true,
+//   auth: {
+//     user: "morelosalfaro@gmail.com",
+//     pass: "vvakuhsjgsjulxnb",
+//   },
+// });
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
-    user: "morelosalfaro@gmail.com",
-    pass: "vvakuhsjgsjulxnb",
+    user: "austins0271142@gmail.com",
+    pass: "trqohqbbaleonmta",
   },
 });
 
@@ -43,7 +52,7 @@ async function saveVerificationCode(user, verificationCode) {
 
 async function sendRecoveryEmailWithCode(user, verificationCode) {
   const mailOptions = {
-    from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
+    from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
     to: user.email,
     subject: 'Recuperación de Contraseña - Pastelería Austin\'s',
     html: `
@@ -186,7 +195,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
 
 
     const mailOptions = {
-      from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
+      from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
       to: user.email,
       subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
       html: `
@@ -207,7 +216,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     };
 
     // const mailOptions = {
-    //   from: '"Pastelería Austin\'s" <morelosalfaro@gmail.com>',
+      // from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
     //   to: user.email,
     //   subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
     //   html: `
@@ -294,6 +303,8 @@ exports.verifyEmail = async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor.' });
   } 
 };
+
+
 exports.signIn = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -325,7 +336,6 @@ exports.signIn = async (req, res, next) => {
       user.loginAttempts = 0;
       user.lockoutUntil = null; // Restablecer el bloqueo temporal
       await user.save();
-
       // Generar y devolver el token de autenticación
       const token = generateAuthToken(user);
       return res.status(200).json({ token });
@@ -333,13 +343,38 @@ exports.signIn = async (req, res, next) => {
       // Incrementar el contador de intentos de inicio de sesión fallidos
       user.loginAttempts++;
       await user.save();
-
       // Verificar si se ha excedido el límite de intentos de inicio de sesión
       if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
         // Bloquear temporalmente la cuenta por un periodo de tiempo (por ejemplo, 30 minutos)
         const lockoutDuration = 30 * 60 * 1000; // 30 minutos en milisegundos
         user.lockoutUntil = new Date(Date.now() + lockoutDuration);
         await user.save();
+        const mailOptions = {
+          from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
+          to: user.email,
+          subject: 'Notificación de Bloqueo Temporal de Cuenta - Pastelería Austin\'s',
+          html: `
+            <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
+              <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
+                <div style="text-align: center; padding: 20px;">
+                  <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
+                </div>
+                <div style="text-align: center; padding: 0 20px;">
+                  <h2 style="font-size: 24px; color: #333; margin-bottom: 20px;">¡Hola ${user.name}!</h2>
+                  <p style="color: #555; font-size: 16px; margin-bottom: 15px;">Hemos detectado varios intentos fallidos de inicio de sesión en tu cuenta de Pastelería Austin's.</p>
+                  <p style="color: #555; font-size: 16px; margin-bottom: 15px;">Por razones de seguridad, hemos bloqueado temporalmente tu cuenta. Por favor, espera un momento y luego intenta iniciar sesión nuevamente.</p>
+                  <p style="color: #555; font-size: 16px; margin-bottom: 25px;">Si has olvidado tu contraseña, puedes restablecerla haciendo clic <a href="https://austins.vercel.app/auth/Recupera" style="color: #ff5733; text-decoration: none;">aquí</a>.</p>
+                </div>
+                <p style="text-align: center; color: #777; font-size: 14px; margin-top: 20px; margin-bottom: 0;">Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.</p>
+                <p style="text-align: center; color: #777; font-size: 14px; margin-top: 5px;">Si no has solicitado este correo, puedes ignorarlo de manera segura.</p>
+              </div>
+            </div>
+          `,
+        };
+        
+        await transporter.sendMail(mailOptions);
+        
+
 
         return res.status(403).json({ message: 'Se ha excedido el límite de intentos de inicio de sesión. La cuenta ha sido bloqueada temporalmente.' });
       } else {
@@ -351,6 +386,8 @@ exports.signIn = async (req, res, next) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
+
 
 function generateAuthToken(user) {
   if (!user) {
