@@ -52,7 +52,7 @@ async function saveVerificationCode(user, verificationCode) {
 
 async function sendRecoveryEmailWithCode(user, verificationCode) {
   const mailOptions = {
-    from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
+    from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
     to: user.email,
     subject: 'Recuperación de Contraseña - Pastelería Austin\'s',
     html: `
@@ -195,7 +195,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
 
 
     const mailOptions = {
-      from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
+      from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: user.email,
       subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
       html: `
@@ -216,7 +216,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     };
 
     // const mailOptions = {
-      // from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
+      // from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
     //   to: user.email,
     //   subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
     //   html: `
@@ -350,7 +350,7 @@ exports.signIn = async (req, res, next) => {
         user.lockoutUntil = new Date(Date.now() + lockoutDuration);
         await user.save();
         const mailOptions = {
-          from: '"Pastelería Austin\'s" <noreply@pasteleriaaustins.com>',
+          from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
           to: user.email,
           subject: 'Notificación de Bloqueo Temporal de Cuenta - Pastelería Austin\'s',
           html: `
