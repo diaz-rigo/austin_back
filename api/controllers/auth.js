@@ -403,7 +403,7 @@ function generateAuthToken(user) {
     rol: user.rol
     // Otros datos del usuario que desees incluir en el token
   };
-
+  
   const secretKey = process.env.JWT_KEY;
   const expiresIn = '5h'; // El token expira en 5 horas, puedes ajustar esto según tus necesidades
 

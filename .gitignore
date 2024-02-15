@@ -3,6 +3,9 @@
 # .vercel/
 
 
+# Ignorar un archivo específico
+.env
+
 
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 # Compiled output
@@ -12,8 +15,6 @@
 /bazel-out
 # Node
 /node_modules
-
-
 
 
 # npm-debug.log
