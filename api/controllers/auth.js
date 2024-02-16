@@ -136,8 +136,8 @@ exports.verificationcode = async (req, res) => {
     // Limpiar el código de verificación (puedes omitir esto si no lo necesitas)
     // user.verificationCode = undefined;
     // user.verificationCodeExpires = undefined;
+    
     // await user.save();
-
     res.status(200).json({ message: 'Código de verificación verificado con éxito.' });
   } catch (error) {
     console.error(error);
