@@ -11,8 +11,6 @@ const MAX_LOGIN_ATTEMPTS = 5; // Define el número máximo de intentos de inicio
 const nodemailer = require("nodemailer");
 
 
-
-
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -110,6 +108,8 @@ exports.verifyCodeAndResetPassword = async (req, res) => {
     user.password = hashedPassword;
     user.verificationCode = undefined;
     user.verificationCodeExpires = undefined;
+    user.loginAttempts = 0;
+    user.lockoutUntil = null;
     await user.save();
 
     res.status(200).json({ message: 'Contraseña restablecida con éxito.' });
