@@ -10,27 +10,6 @@ const MAX_LOGIN_ATTEMPTS = 5; // Define el número máximo de intentos de inicio
 "use strict";
 const nodemailer = require("nodemailer");
 
-// const transporter = nodemailer.createTransport({
-//   host: "smtp.gmail.com",
-//   port: 465,
-//   secure: true,
-//   auth: {
-//     user: "morelosalfaro@gmail.com",
-//     pass: "vvakuhsjgsjulxnb",
-//   },
-// });
-
-
-// const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/'
-// const transporter = nodemailer.createTransport({
-//   host: "smtp.gmail.com",
-//   port: 465,
-//   secure: true,
-//   auth: {
-//     user: "austins0271142@gmail.com",
-//     pass: "trqohqbbaleonmta",
-//   },
-// });
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
