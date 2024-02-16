@@ -10,6 +10,9 @@ const MAX_LOGIN_ATTEMPTS = 5; // Define el número máximo de intentos de inicio
 "use strict";
 const nodemailer = require("nodemailer");
 
+
+
+
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -19,9 +22,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASSMAIL,
   },
 });
-
-
-
 
 
 // {"message":"Token de verificación no válido."}
