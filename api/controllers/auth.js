@@ -19,15 +19,30 @@ const nodemailer = require("nodemailer");
 //     pass: "vvakuhsjgsjulxnb",
 //   },
 // });
+
+
+// const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/'
+// const transporter = nodemailer.createTransport({
+//   host: "smtp.gmail.com",
+//   port: 465,
+//   secure: true,
+//   auth: {
+//     user: "austins0271142@gmail.com",
+//     pass: "trqohqbbaleonmta",
+//   },
+// });
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
-    user: "austins0271142@gmail.com",
-    pass: "trqohqbbaleonmta",
+    user: process.env.USER,
+    pass: process.env.PASSMAIL,
   },
 });
+
+
+
 
 
 // {"message":"Token de verificación no válido."}
@@ -123,7 +138,7 @@ exports.verifyCodeAndResetPassword = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Error interno del servidor.', details: error.message || error, stack: error.stack });
   }
-  
+
 };
 
 
@@ -156,7 +171,7 @@ exports.verificationcode = async (req, res) => {
 exports.signUpAndVerifyEmail = async (req, res, next) => {
   try {
 
-      const { email, securityQuestion, securityAnswer, phone } = req.body;
+    const { email, securityQuestion, securityAnswer, phone } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -193,7 +208,8 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // Válido por 24 horas
     await user.save();
 
-
+    console.log(process.env.USER,
+      process.env.PASSMAIL,);
     const mailOptions = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: user.email,
@@ -216,7 +232,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     };
 
     // const mailOptions = {
-      // from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+    // from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
     //   to: user.email,
     //   subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
     //   html: `
@@ -235,7 +251,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     //     </div>
     //   `,
     // };
-    
+
 
     await transporter.sendMail(mailOptions);
 
@@ -301,7 +317,7 @@ exports.verifyEmail = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Error interno del servidor.' });
-  } 
+  }
 };
 
 
@@ -349,7 +365,7 @@ exports.signIn = async (req, res, next) => {
         const lockoutDuration = 30 * 60 * 1000; // 30 minutos en milisegundos
         user.lockoutUntil = new Date(Date.now() + lockoutDuration);
         await user.save();
-        
+
         const mailOptions = {
           from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
           to: user.email,
@@ -372,9 +388,9 @@ exports.signIn = async (req, res, next) => {
             </div>
           `,
         };
-        
+
         await transporter.sendMail(mailOptions);
-        
+
 
 
         return res.status(403).json({ message: 'Se ha excedido el límite de intentos de inicio de sesión. La cuenta ha sido bloqueada temporalmente.' });
@@ -403,7 +419,7 @@ function generateAuthToken(user) {
     rol: user.rol
     // Otros datos del usuario que desees incluir en el token
   };
-  
+
   const secretKey = process.env.JWT_KEY;
   const expiresIn = '5h'; // El token expira en 5 horas, puedes ajustar esto según tus necesidades
 
