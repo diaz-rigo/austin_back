@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const PushSubscription = require("../models/PushSubscription");
+const PushSubscription = require("../models/pushSubscription");
 const webpush = require('web-push');
 
 // Configurar las claves VAPID
