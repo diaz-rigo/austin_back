@@ -79,7 +79,7 @@ function enviarNotificacionBienvenida(subscription) {
     const payload = {
         notification: {
             title: "😋🍰 Bienvenido a Austins Repostería",
-            body: "Gracias por suscribirte. Descubre nuestras deliciosas creaciones.",
+            body: " Descubre nuestras deliciosas creaciones.",
             icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
             vibrate: [200, 50, 200],
             actions: [{
