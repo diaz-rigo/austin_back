@@ -38,12 +38,32 @@ exports.createSubscription = (req, res, next) => {
 
     pushSubscription.save()
         .then(result => {
+            // Envía la notificación de bienvenida
+            enviarNotificacionBienvenida(pushSubscription);
             res.status(201).json(result);
         })
         .catch(err => {
             res.status(500).json({ error: err });
         });
 };
+
+function enviarNotificacionBienvenida(subscription) {
+    const payload = {
+        notification: {
+            title: "¡Bienvenido a nuestra aplicación!",
+            body: "Gracias por unirte a nosotros. Esperamos que disfrutes de tu experiencia.",
+            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png"
+        }
+    };
+
+    webpush.sendNotification(subscription, JSON.stringify(payload))
+        .then(() => {
+            console.log('Notificación de bienvenida enviada con éxito');
+        })
+        .catch(err => {
+            console.error('Error al enviar notificación de bienvenida:', err);
+        });
+}
 
 // Obtener una suscripción por ID
 exports.getSubscription = (req, res, next) => {
