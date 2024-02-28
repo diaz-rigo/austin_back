@@ -48,11 +48,24 @@ exports.createSubscription = (req, res, next) => {
 };
 
 function enviarNotificacionBienvenida(subscription) {
+    // const payload = {
+    //     notification: {
+    //         title: "¡Bienvenido a nuestra aplicación!",
+    //         body: "Gracias por unirte a nosotros. Esperamos que disfrutes de tu experiencia.",
+    //         icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png"
+    //     }
+    // };
     const payload = {
         notification: {
-            title: "¡Bienvenido a nuestra aplicación!",
-            body: "Gracias por unirte a nosotros. Esperamos que disfrutes de tu experiencia.",
-            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png"
+            title: "😋🍰 Bienvenido a Austins Repostería",
+            body: "Gracias por suscribirte. Descubre nuestras deliciosas creaciones.",
+            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+            image: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+            vibrate: [100, 50, 100],
+            actions: [{
+                action: "explore",
+                title: "Ver nuestras especialidades"
+            }]
         }
     };
 
