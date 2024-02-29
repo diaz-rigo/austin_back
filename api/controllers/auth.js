@@ -86,9 +86,51 @@ async function sendRecoveryEmailWithCode(user, verificationCode) {
 }
 
 
+// exports.requestPasswordRecovery = async (req, res) => {
+//   try {
+//     // const { email } = req.body;
+//     const { email, subscription } = req.body;
+
+//     const user = await User.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'Usuario no encontrado.' });
+//     }
+
+//     const verificationCode = generateVerificationCode();
+
+//     // Guardar el código de verificación en el usuario
+//     await saveVerificationCode(user, verificationCode);
+
+//     // Enviar correo de recuperación de contraseña con el código de verificación
+//     await sendRecoveryEmailWithCode(user, verificationCode);
+//     // Enviar la notificación push
+//     // Enviar la notificación push
+//     const notificationPayload = JSON.stringify({
+//       title: 'Recuperación de Contraseña',
+//       body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
+//       icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+//       badge: 'https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png', // Badge (ícono pequeño que se muestra en algunas notificaciones)
+//       vibrate: [200, 100, 200], // Patrón de vibración del dispositivo
+//       tag: 'password-recovery', // Etiqueta para agrupar notificaciones
+//       renotify: true, // Mostrar la notificación nuevamente si no se ha cerrado
+//       requireInteraction: true, // Requiere la interacción del usuario para desaparecer
+   
+      
+//       // Otras opciones disponibles: dir, lang, renotify, silent, timestamp, noscreen
+//     });
+
+//     await webpush.sendNotification(subscription, notificationPayload);
+
+//     res.status(200).json({ message: 'Correo de recuperación de contraseña enviado correctamente.' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Error interno del servidor.' });
+//   }
+// };
+
 exports.requestPasswordRecovery = async (req, res) => {
   try {
-    // const { email } = req.body;
     const { email, subscription } = req.body;
 
     const user = await User.findOne({ email });
@@ -104,20 +146,22 @@ exports.requestPasswordRecovery = async (req, res) => {
 
     // Enviar correo de recuperación de contraseña con el código de verificación
     await sendRecoveryEmailWithCode(user, verificationCode);
-    // Enviar la notificación push
+
+    // Verificar que haya una suscripción antes de enviar la notificación
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ error: 'La suscripción no es válida.' });
+    }
+
     // Enviar la notificación push
     const notificationPayload = JSON.stringify({
       title: 'Recuperación de Contraseña',
       body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
       icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-      badge: 'https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png', // Badge (ícono pequeño que se muestra en algunas notificaciones)
-      vibrate: [200, 100, 200], // Patrón de vibración del dispositivo
-      tag: 'password-recovery', // Etiqueta para agrupar notificaciones
-      renotify: true, // Mostrar la notificación nuevamente si no se ha cerrado
-      requireInteraction: true, // Requiere la interacción del usuario para desaparecer
-   
-      
-      // Otras opciones disponibles: dir, lang, renotify, silent, timestamp, noscreen
+      badge: 'https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png',
+      vibrate: [200, 100, 200],
+      tag: 'password-recovery',
+      renotify: true,
+      requireInteraction: true,
     });
 
     await webpush.sendNotification(subscription, notificationPayload);
@@ -128,6 +172,8 @@ exports.requestPasswordRecovery = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };
+
+
 
 exports.verifyCodeAndResetPassword = async (req, res) => {
   try {
