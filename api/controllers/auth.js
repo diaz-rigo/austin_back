@@ -214,7 +214,7 @@ exports.requestPasswordRecovery = async (req, res) => {
         title: 'Recuperación de Contraseña',
         body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
         icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-        vibrate: [200],
+        vibrate: [200, 100, 200],
 
       }
     };
