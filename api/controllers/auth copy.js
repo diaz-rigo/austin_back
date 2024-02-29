@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const webpush = require('web-push');
 
 const crypto = require('crypto');
 const MAX_LOGIN_ATTEMPTS = 5; // Define el número máximo de intentos de inicio de sesión permitidos antes de bloquear la cuenta del usuario
@@ -22,23 +21,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Configurar las claves VAPID
-const vapidKeys = {
-  publicKey: "BFYtOg9-LQWHmObZKXm4VIV2BImn5nBrhz4h37GQpbdj0hSBcghJG7h-wldz-fx9aTt7oaqKSS3KXhA4nXf32pY",
-  privateKey: "daiRV8XPPoeSHC4nZ5Hj6yHr98saYGlysFAuEJPypa0"
-};
-
-// webpush.setVapidDetails(
-//   'mailto:example@yourdomain.org',
-//   vapidKeys.publicKey,
-//   vapidKeys.privateKey
-// );
-
-webpush.setVapidDetails(
-  'mailto:example@yourdomain.org',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
 
 // {"message":"Token de verificación no válido."}
 function generateVerificationCode() {
@@ -88,8 +70,7 @@ async function sendRecoveryEmailWithCode(user, verificationCode) {
 
 exports.requestPasswordRecovery = async (req, res) => {
   try {
-    // const { email } = req.body;
-    const { email, subscription } = req.body;
+    const { email } = req.body;
 
     const user = await User.findOne({ email });
 
@@ -104,23 +85,6 @@ exports.requestPasswordRecovery = async (req, res) => {
 
     // Enviar correo de recuperación de contraseña con el código de verificación
     await sendRecoveryEmailWithCode(user, verificationCode);
-    // Enviar la notificación push
-    // Enviar la notificación push
-    const notificationPayload = JSON.stringify({
-      title: 'Recuperación de Contraseña',
-      body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
-      icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-      badge: 'https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png', // Badge (ícono pequeño que se muestra en algunas notificaciones)
-      vibrate: [200, 100, 200], // Patrón de vibración del dispositivo
-      tag: 'password-recovery', // Etiqueta para agrupar notificaciones
-      renotify: true, // Mostrar la notificación nuevamente si no se ha cerrado
-      requireInteraction: true, // Requiere la interacción del usuario para desaparecer
-   
-      
-      // Otras opciones disponibles: dir, lang, renotify, silent, timestamp, noscreen
-    });
-
-    await webpush.sendNotification(subscription, notificationPayload);
 
     res.status(200).json({ message: 'Correo de recuperación de contraseña enviado correctamente.' });
   } catch (error) {
