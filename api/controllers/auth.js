@@ -115,8 +115,8 @@ async function sendRecoveryEmailWithCode(user, verificationCode) {
 //       tag: 'password-recovery', // Etiqueta para agrupar notificaciones
 //       renotify: true, // Mostrar la notificación nuevamente si no se ha cerrado
 //       requireInteraction: true, // Requiere la interacción del usuario para desaparecer
-   
-      
+
+
 //       // Otras opciones disponibles: dir, lang, renotify, silent, timestamp, noscreen
 //     });
 
@@ -198,19 +198,37 @@ exports.requestPasswordRecovery = async (req, res) => {
     }
 
     // Enviar la notificación push
-    const notificationPayload = JSON.stringify({
-      title: 'Recuperación de Contraseña',
-      body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
-      icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-      badge: 'https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png',
-      vibrate: [200, 100, 200],
-      tag: 'password-recovery',
-      renotify: true,
-      requireInteraction: true,
-    });
+    // const notificationPayload = JSON.stringify({
+    //   title: 'Recuperación de Contraseña',
+    //   body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
+    //   icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+    //   badge: 'https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png',
+    //   vibrate: [200, 100, 200],
+    //   tag: 'password-recovery',
+    //   renotify: true,
+    //   requireInteraction: true,
+    // });
+    // await webpush.sendNotification(subscription, notificationPayload);
+    const payload = {
+      notification: {
+        title: 'Recuperación de Contraseña',
+        body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
+        icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+        vibrate: [200, 50, 200],
+        actions: [{
+          action: "explore",
+          title: "Ver nuestras especialidades"
+        }]
+      }
+    };
 
-    await webpush.sendNotification(subscription, notificationPayload);
-
+    webpush.sendNotification(subscription, JSON.stringify(payload))
+      .then(() => {
+        console.log('Notificación de bienvenida enviada con éxito');
+      })
+      .catch(err => {
+        console.error('Error al enviar notificación de bienvenida:', err);
+      });
     res.status(200).json({ message: 'Correo de recuperación de contraseña enviado correctamente..' });
   } catch (error) {
     console.error(error);
