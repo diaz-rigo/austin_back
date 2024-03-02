@@ -1,14 +1,8 @@
 const mongoose = require("mongoose");
 const Product = require("../models/product");
 const path = require('path');
-
-// const path = require('path');
-
 const fs = require('fs');
-const objectId = new mongoose.Types.ObjectId();
-
-
-
+const cloudinary = require('../utils/cloudinary'); // Importa la configuración de Cloudinary
 
 
 
@@ -28,15 +22,34 @@ exports.updateImage = async (req, res, next) => {
     let images = response.images;
 
     console.log('find', images);
-    console.log(`req.position: ${req.body.position}, req.file: ${req.file.filename}`);
+    console.log(`req.position: ${req.body.position}, req.file: ${req.file.originalname}`);
+    console.log('carpeta', req.file.path);
 
     if (req.body.position === 0 || (req.body.position && req.file)) {
+      // const result = await cloudinary.uploader.upload(req.file.path, {
+      //   folder: `${category}/${_id}`,
+      //   public_id: req.file.originalname
+      // });
+      const path = require('path');
+
+      // Dentro de tu función updateImage antes de cargar en Cloudinary
+      const fileName = path.parse(req.file.originalname).name;
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: `${category}/${_id}`,
+        public_id: fileName // Usar el nombre de archivo sin la extensión
+      });
+
+
+      // Elimina la imagen temporal del servidor
+      fs.unlinkSync(req.file.path);
+
+      const cloudinaryUrl = result.secure_url;
       const body = {
         position: req.body.position,
-        image: `uploads/${category}/${_id}/${req.file.filename}`
+        image: cloudinaryUrl
       };
 
-      if (images.length > body.position) {
+      if (images.length > body.position) {  
         console.log('if', images);
         images[body.position] = body.image;
       } else {
@@ -65,11 +78,7 @@ exports.updateImage = async (req, res, next) => {
     console.error('Error:', error);
     res.status(500).json({ error: error.message || "Internal Server Error" });
   }
-};
-
-
-
-
+}
 
 
 

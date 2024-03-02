@@ -10,65 +10,71 @@
 
 
 
-
-
 // exports.updateImage = async (req, res, next) => {
-//   try {
-//     const _id = req.params.id;
-//     const category = req.params.category;
-
-//     // Utiliza await para esperar la resolución de la promesa
-//     const response = await Product.findById(_id).exec();
-//     console.log('product find', response);
-
-//     if (!response) {
-//       return res.status(404).json({ message: "Error: Product not found" });
-//     }
-
-//     let images = response.images;
-
-//     console.log('find', images);
-//     console.log(`req.position: ${req.body.position}, req.file: ${req.file.filename}`);
-
-//     if (req.body.position === 0 || (req.body.position && req.file)) {
-//       const body = {
-//         position: req.body.position,
-//         image: `uploads/${category}/${_id}/${req.file.filename}`
-//       };
-
-//       if (images.length > body.position) {
-//         console.log('if', images);
-//         images[body.position] = body.image;
-//       } else {
-//         console.log('else', images);
-//         images.push(body.image);
+//     try {
+//       const _id = req.params.id;
+//       const category = req.params.category;
+  
+//       // Utiliza await para esperar la resolución de la promesa
+//       const response = await Product.findById(_id).exec();
+//       console.log('product find', response);
+  
+//       if (!response) {
+//         return res.status(404).json({ message: "Error: Product not found" });
 //       }
-//     } else {
-//       return res.status(400).json({ message: "Error: Invalid request" });
+  
+//       let images = response.images;
+  
+//       console.log('find', images);
+//       console.log(`req.position: ${req.body.position}, req.file: ${req.file.originalname}`);
+  
+//       if (req.body.position === 0 || (req.body.position && req.file)) {
+//         const result = await cloudinary.uploader.upload(req.file.path, {
+//           folder: `${category}/${_id}`,
+//           public_id: req.file.filename
+//         });
+  
+//         // Elimina la imagen temporal del servidor
+//         // fs.unlinkSync(req.file.path);
+  
+//         const cloudinaryUrl = result.secure_url;
+//         const body = {
+//           position: req.body.position,
+//           image: cloudinaryUrl
+//         };
+  
+//         if (images.length > body.position) {
+//           console.log('if', images);
+//           images[body.position] = body.image;
+//         } else {
+//           console.log('else', images);
+//           images.push(body.image);
+//         }
+//       } else {
+//         return res.status(400).json({ message: "Error: Invalid request" });
+//       }
+  
+//       console.log('set', images);
+  
+//       // Utiliza await para esperar la resolución de la actualización
+//       const updatedProduct = await Product.findOneAndUpdate(
+//         { _id: _id },
+//         { $set: { images: images } },
+//         { new: true }
+//       ).exec();
+  
+//       console.log('update', images);
+  
+//       res.status(200).json({
+//         image: updatedProduct
+//       });
+//     } catch (error) {
+//       console.error('Error:', error);
+//       res.status(500).json({ error: error.message || "Internal Server Error" });
 //     }
-
-//     console.log('set', images);
-
-//     // Utiliza await para esperar la resolución de la actualización
-//     const updatedProduct = await Product.findOneAndUpdate(
-//       { _id: _id },
-//       { $set: { images: images } },
-//       { new: true }
-//     ).exec();
-
-//     console.log('update', images);
-
-//     res.status(200).json({
-//       image: updatedProduct
-//     });
-//   } catch (error) {
-//     console.error('Error:', error);
-//     res.status(500).json({ error: error.message || "Internal Server Error" });
 //   }
-// };
-
-
-
+  
+  
 
 
 
