@@ -84,19 +84,29 @@ exports.updateImage = async (req, res, next) => {
 
 
 
-
-
 exports.getAll = (req, res, next) => {
-  Product.find()
+  Product.find({ status: "ACTIVE" })
     .exec()
     .then(docs => {
-      console.log('docs')
-      res.status(200).json(docs)
+      res.status(200).json(docs);
     })
     .catch(err => {
       res.status(500).json({ error: err });
     });
 };
+
+
+// exports.getAll = (req, res, next) => {
+//   Product.find()
+//     .exec()
+//     .then(docs => {
+//       console.log('docs')
+//       res.status(200).json(docs)
+//     })
+//     .catch(err => {
+//       res.status(500).json({ error: err });
+//     });
+// };
 
 
 exports.get = (req, res, next) => {
