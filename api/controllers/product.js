@@ -4,6 +4,84 @@ const path = require('path');
 const fs = require('fs');
 const cloudinary = require('../utils/cloudinary'); // Importa la configuración de Cloudinary
 
+exports.deleteImage = async (req, res, next) => {
+  const productId = req.params.id;
+  const imageName = req.params.imageName;
+
+  try {
+    const product = await Product.findById(productId).exec();
+
+    if (!product) {
+      return res.status(404).json({ message: "Error: Product not found" });
+    }
+
+    // Mostrar todas las imágenes del producto para verificar
+    console.log("Product Images:", product.images);
+
+    const sanitize = str => str.replace(/~|%7E/g, '');
+
+    const imageUrlParts = product.images.map(image => {
+      const parts = image.split('/');
+      return sanitize(parts[parts.length - 1]);
+    });
+
+    console.log("Image URL Parts:", imageUrlParts);
+
+    console.log("Requested Image Name:", imageName);
+
+    // Sanitizar imageName para comparación
+    const sanitizedImageName = sanitize(imageName);
+
+    // Buscar si sanitizedImageName está en imageUrlParts
+    const foundIndex = imageUrlParts.findIndex(part => sanitize(part) === sanitizedImageName);
+
+    // Comparar si se encontró el nombre de imagen
+    if (foundIndex !== -1) {
+      console.log("Las URLs de imagen coinciden.");
+      console.log("Índice donde se encontró:", foundIndex);
+
+      // Obtener el URL completo de la imagen encontrada
+      const imageUrl = product.images[foundIndex];
+      console.log("URL completo de la imagen:", imageUrl);
+    } else {
+      console.log("Las URLs de imagen NO coinciden.");
+    }
+
+    if (foundIndex === -1) {
+      return res.status(404).json({ message: "Error: Image not found for this product", imageName, productImages: product.images });
+    }
+
+    // Obtener la categoría y el ID del producto
+    const category = product.category;
+    const productIdFromURL = req.params.id;
+    const publicId = `${category}/${productIdFromURL}/${imageName.split('.')[0]}`;
+
+    console.log("Public ID:", publicId);
+
+    const result = await cloudinary.uploader.destroy(publicId);
+
+    if (result.result !== 'ok') {
+      console.log(result.result);
+      return res.status(500).json({ message: "Error deleting image from Cloudinary" });
+    }
+
+    // Remover la imagen del array de imágenes del producto
+    product.images.splice(foundIndex, 1);
+    // Guardar los cambios en el producto
+    await product.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Image deleted successfully from Cloudinary",
+    });
+
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+
 
 
 exports.updateImage = async (req, res, next) => {
@@ -49,7 +127,7 @@ exports.updateImage = async (req, res, next) => {
         image: cloudinaryUrl
       };
 
-      if (images.length > body.position) {  
+      if (images.length > body.position) {
         console.log('if', images);
         images[body.position] = body.image;
       } else {
@@ -160,45 +238,6 @@ exports.create = (req, res, next) => {
 
 
 
-// ... (existing code)
-// New route for deleting an image
-exports.deleteImage = async (req, res, next) => {
-  const productId = req.params.id;
-  const imageName = req.params.imageName;
-
-  try {
-    const product = await Product.findById(productId).exec();
-
-    if (!product) {
-      return res.status(404).json({ message: "Error: Product not found" });
-    }
-    // Remove the image from the images array
-    const updatedImages = product.images.filter(image => path.basename(image) !== imageName);
-
-    // Update the product with the new images array
-    const updatedProduct = await Product.findOneAndUpdate(
-      { _id: productId },
-      { $set: { images: updatedImages } },
-      { new: true }
-    ).exec();
-
-    const imagePath = path.join(__dirname, '..', '..', 'uploads', product.category, productId, imageName);
-
-    // const imagePath = path.join(__dirname, '..', 'uploads', product.category, productId, imageName);
-    console.log('Image Path:', imagePath);
-
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
-    } else {
-      return res.status(404).json({ message: "Error: Image file not found on the server" });
-    }
-
-    res.status(200).json({ message: "Image deleted successfully", updatedProduct });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: error.message || "Internal Server Error" });
-  }
-};
 
 
 exports.updateProductStatus = (req, res, next) => {
