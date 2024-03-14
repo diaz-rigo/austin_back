@@ -57,11 +57,13 @@ function enviarNotificacionBienvenida(subscription) {
             vibrate: [200, 50, 200],
             actions: [{
                 action: "explore",
-                title: "Ver nuestras especialidades"
+                title: "Ver nuestras especialidades",
+                url: "https://austins.vercel.app"
+
             }]
         }
     };
-
+    // https://austins.vercel.app/portal/home
     webpush.sendNotification(subscription, JSON.stringify(payload))
         .then(() => {
             console.log('Notificación de bienvenida enviada con éxito');
@@ -135,7 +137,8 @@ exports.enviarNotificacion = (req, res, next) => {
             vibrate: [100, 50, 100],
             actions: [{
                 action: "explore",
-                title: "Ver nuestras especialidades"
+                title: "Ver nuestras especialidades",
+                url: "https://austins.vercel.app"
             }]
         }
     };

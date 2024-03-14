@@ -26,7 +26,9 @@
     "nanoid": "^5.0.4",
     "nodemailer": "^6.9.8",
     "nodemon": "^3.0.1",
+    "request": "^2.88.2",
     "resend": "^3.0.0",
+    "stripe": "^14.20.0",
     "web-push": "^3.6.7"
   }
 }

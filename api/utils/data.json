@@ -1,0 +1,109 @@
+{
+    "data": {
+        "id": "5XW44002B4042234P",
+        "status": "COMPLETED",
+        "payment_source": {
+            "paypal": {
+                "email_address": "sb-aei9a29845258@personal.example.com",
+                "account_id": "LZTL87TLY6CXN",
+                "account_status": "VERIFIED",
+                "name": {
+                    "given_name": "John",
+                    "surname": "Doe"
+                },
+                "address": {
+                    "country_code": "MX"
+                }
+            }
+        },
+        "purchase_units": [
+            {
+                "reference_id": "default",
+                "shipping": {
+                    "name": {
+                        "full_name": "John Doe"
+                    },
+                    "address": {
+                        "address_line_1": "Calle Juarez 1",
+                        "address_line_2": "Col. Cuauhtemoc",
+                        "admin_area_2": "Miguel Hidalgo",
+                        "admin_area_1": "Ciudad de Mexico",
+                        "postal_code": "11580",
+                        "country_code": "MX"
+                    }
+                },
+                "payments": {
+                    "captures": [
+                        {
+                            "id": "1GU3226458993884N",
+                            "status": "COMPLETED",
+                            "amount": {
+                                "currency_code": "MXN",
+                                "value": "661.00"
+                            },
+                            "final_capture": true,
+                            "seller_protection": {
+                                "status": "ELIGIBLE",
+                                "dispute_categories": [
+                                    "ITEM_NOT_RECEIVED",
+                                    "UNAUTHORIZED_TRANSACTION"
+                                ]
+                            },
+                            "seller_receivable_breakdown": {
+                                "gross_amount": {
+                                    "currency_code": "MXN",
+                                    "value": "661.00"
+                                },
+                                "paypal_fee": {
+                                    "currency_code": "MXN",
+                                    "value": "34.91"
+                                },
+                                "net_amount": {
+                                    "currency_code": "MXN",
+                                    "value": "626.09"
+                                }
+                            },
+                            "links": [
+                                {
+                                    "href": "https://api.sandbox.paypal.com/v2/payments/captures/1GU3226458993884N",
+                                    "rel": "self",
+                                    "method": "GET"
+                                },
+                                {
+                                    "href": "https://api.sandbox.paypal.com/v2/payments/captures/1GU3226458993884N/refund",
+                                    "rel": "refund",
+                                    "method": "POST"
+                                },
+                                {
+                                    "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5XW44002B4042234P",
+                                    "rel": "up",
+                                    "method": "GET"
+                                }
+                            ],
+                            "create_time": "2024-03-14T16:47:00Z",
+                            "update_time": "2024-03-14T16:47:00Z"
+                        }
+                    ]
+                }
+            }
+        ],
+        "payer": {
+            "name": {
+                "given_name": "John",
+                "surname": "Doe"
+            },
+            "email_address": "sb-aei9a29845258@personal.example.com",
+            "payer_id": "LZTL87TLY6CXN",
+            "address": {
+                "country_code": "MX"
+            }
+        },
+        "links": [
+            {
+                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5XW44002B4042234P",
+                "rel": "self",
+                "method": "GET"
+            }
+        ]
+    }
+}

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 
 exports.getAll = (req, res, next) => {
+  // console.log(req)
     User.find()
         .exec()
         .then(docs => {
