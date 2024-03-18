@@ -17,7 +17,6 @@ exports.createSession = async (req, res) => {
       },
       quantity: producto.cantidad,
     }));
-
     const customerName = datoscliente.name + " " + datoscliente.paternalLastname + " " + datoscliente.maternalLastname; // Concatenar nombre completo
 
     const session = await stripe.checkout.sessions.create({

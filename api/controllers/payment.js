@@ -10,7 +10,9 @@ exports.createPayment = (req, res, next) => {
     const { totalneto, tipoEntrega, dateselect, productos, datoscliente, instruction } = req.body;
 
     const totalAmount = calculateTotalAmount(productos); // Function to calculate total amount based on products
-
+    // success: "https://austins.vercel.app/payment/order-success",
+    // pending: "https://austins.vercel.app/pending",
+    // failure: "https://austins.vercel.app/payment/order-detail?deliveryOption=inStore",
     const body = {
         intent: 'CAPTURE',
         purchase_units: [{
@@ -23,8 +25,8 @@ exports.createPayment = (req, res, next) => {
             brand_name: `austins.vercel.app`,
             landing_page: 'NO_PREFERENCE',
             user_action: 'PAY_NOW',
-            return_url: `http://localhost:3000/payment/`, // Change return URL
-            cancel_url: `http://localhost:3000/payment/` // Change cancel URL
+            return_url: `https://austins.vercel.app/payment/order-success`, // Change return URL
+            cancel_url: `https://austins.vercel.app/payment/order-detail?deliveryOption=inStore` // Change cancel URL
         }
     };
 
@@ -40,7 +42,9 @@ exports.createPayment = (req, res, next) => {
     });
 }
 
-
+// success: "https://austins.vercel.app/payment/order-success",
+// pending: "https://austins.vercel.app/pending",
+// failure: "https://austins.vercel.app/payment/order-detail?deliveryOption=inStore",
 exports.executePayment = (req, res, next) => {
     const token = req.query.token;
 

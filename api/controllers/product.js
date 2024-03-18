@@ -15,9 +15,6 @@ exports.deleteImage = async (req, res, next) => {
       return res.status(404).json({ message: "Error: Product not found" });
     }
 
-    // Mostrar todas las imágenes del producto para verificar
-    console.log("Product Images:", product.images);
-
     const sanitize = str => str.replace(/~|%7E/g, '');
 
     const imageUrlParts = product.images.map(image => {
@@ -174,17 +171,6 @@ exports.getAll = (req, res, next) => {
 };
 
 
-// exports.getAll = (req, res, next) => {
-//   Product.find()
-//     .exec()
-//     .then(docs => {
-//       console.log('docs')
-//       res.status(200).json(docs)
-//     })
-//     .catch(err => {
-//       res.status(500).json({ error: err });
-//     });
-// };
 
 
 exports.get = (req, res, next) => {

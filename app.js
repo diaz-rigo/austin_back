@@ -12,6 +12,10 @@ const tokenRoutes = require('./api/routes/token');
 const pushSubscription = require('./api/routes/pushSubscription');
 const paymentRoutes = require('./api/routes/payment');
 const paymentStripeRoutes = require('./api/routes/paymentStripe');
+// import paymentRoutes from "./api/routes/paymentMercado.js";
+// import paymentRoutes from "./routes/payment.routes.js";
+
+const paymentMercadoRoutes = require('./api/routes/paymentMercado');
 // const makerRoutes = require('./api/routes/maker');
 // const minewRoutes = require('./api/routes/minew');
 // const loggerRoutes = require('./api/routes/logger');
@@ -51,6 +55,7 @@ app.use('/token', tokenRoutes);
 app.use('/pushSubscription', pushSubscription);
 app.use('/payment', paymentRoutes);
 app.use('/stripe', paymentStripeRoutes);
+app.use('/mercado', paymentMercadoRoutes);
 // app.use('/maker', makerRoutes);
 // app.use('/minew', minewRoutes);
 // app.use('/logger', loggerRoutes);
