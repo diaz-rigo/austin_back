@@ -26,14 +26,14 @@ const vapidKeys = {
   privateKey: "daiRV8XPPoeSHC4nZ5Hj6yHr98saYGlysFAuEJPypa0"
 };
 
+
 // webpush.setVapidDetails(
 //   'mailto:example@yourdomain.org',
 //   vapidKeys.publicKey,
 //   vapidKeys.privateKey
 // );
-
 webpush.setVapidDetails(
-  'mailto:example@yourdomain.org',
+  'mailto:austins0271142@gmail.com',
   vapidKeys.publicKey,
   vapidKeys.privateKey
 );
@@ -126,6 +126,8 @@ exports.requestPasswordRecovery = async (req, res) => {
         body: `Código de verificación: ${verificationCode}`,
         icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
         vibrate: [200, 100, 200],
+        sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
+        priority: 'high',
 
       }
     };
@@ -183,10 +185,6 @@ exports.verificationcode = async (req, res) => {
     if (!user || user.verificationCodeExpires < Date.now()) {
       return res.status(400).json({ message: 'Código de verificación no válido o ha expirado.' });
     }
-
-    // Limpiar el código de verificación (puedes omitir esto si no lo necesitas)
-    // user.verificationCode = undefined;
-    // user.verificationCodeExpires = undefined;
 
     // await user.save();
     res.status(200).json({ message: 'Código de verificación verificado con éxito.' });

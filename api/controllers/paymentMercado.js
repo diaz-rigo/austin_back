@@ -28,12 +28,9 @@ exports.createOrder = async (req, res) => {
 
     console.log(result);
 
-    // Check if the response contains the init_point
-    if (result && result.body && result.body.init_point) {
-      // Return the init_point URL in the response
-      // url = res.sandbox_init_point
 
-      // return res.json({ url: result.body.init_point });
+    if (result && result.body && result.body.init_point) {
+
       return res.json({ url: result.body.sandbox_init_point });
     } else {
       console.error('init_point not found in the response');
