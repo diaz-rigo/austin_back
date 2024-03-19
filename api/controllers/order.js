@@ -75,7 +75,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     const payload = {
       notification: {
         title: 'Seguimiento de Pedido',
-        body: `Número de seguimiento: ${paypalOrderId}`,
+        body: `Número de seguimiento: ${paypalOrderId} correo:${userEmail} usuari:${userName}`,
         icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
         vibrate: [200, 100, 200],
         sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
