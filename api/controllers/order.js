@@ -60,13 +60,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
-     // Accediendo al usuario asociado al pedido
-    //  const user = purchase.user;
 
-    //  // Obteniendo el correo electrónico y el nombre del usuario
-    //  const userEmail = user.email;
-    //  const userName = user.name; // Asegúrate de que este sea el nombre correcto del campo en tu esquema de usuario
-    // Accediendo al correo electrónico y el nombre del usuario
     const userEmail = user.email;
     const userName = user.name;
     console.log(userEmail,userName)

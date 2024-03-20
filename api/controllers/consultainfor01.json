@@ -1,0 +1,33 @@
+// {
+//     "sales": [
+//         {
+//             "_id": null,
+//             "totalSales": 1500, // Monto total de ventas durante el período especificado
+//             "totalOrders": 10 // Número total de pedidos durante el período especificado
+//         }
+//     ],
+//     "topProducts": [
+//         {
+//             "_id": "productId1",
+//             "totalQuantity": 20 // Cantidad total vendida del producto más vendido
+//         },
+//         {
+//             "_id": "productId2",
+//             "totalQuantity": 15 // Cantidad total vendida del segundo producto más vendido
+//         },
+//         // Otros productos más vendidos...
+//     ],
+//     "topCustomers": [
+//         {
+//             "_id": "customerId1",
+//             "totalAmount": 800, // Monto total gastado por el cliente más frecuente
+//             "name": "Nombre Cliente 1" // Nombre del cliente más frecuente
+//         },
+//         {
+//             "_id": "customerId2",
+//             "totalAmount": 600, // Monto total gastado por el segundo cliente más frecuente
+//             "name": "Nombre Cliente 2" // Nombre del segundo cliente más frecuente
+//         },
+//         // Otros clientes más frecuentes...
+//     ]
+// }
