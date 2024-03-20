@@ -20,7 +20,7 @@ cron.schedule('0 0 * * *', async () => {
         // Obtén todas las compras pendientes creadas hace más de 72 horas
         // const cutoffDate = new Date(Date.now() - 72 * 60 * 60 * 1000); // 72 horas en milisegundos
         // const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 horas en milisegundos
-        const cutoffDate = new Date(Date.now() - 4 * 60 * 60 * 1000); // 4 horas en milisegundos
+        const cutoffDate = new Date(Date.now() - 1* 60 * 60 * 1000); // 4 horas en milisegundos
         const pendingPurchases = await Purchase.find({ status: 'PENDING', createdAt: { $lte: cutoffDate } });
 
         // Procesa cada compra pendiente
