@@ -47,7 +47,10 @@ exports.updateStatusOrder = async (req, res, next) => {
     if (!purchaseDetail) {
       return res.status(404).json({ message: 'Detalle de compra no encontrado' });
     }
-
+    // Verificar si el estado de la compra ya es "PAID"
+    if (purchaseDetailId.status === 'PAID') {
+      return res.status(200).json({ message: 'La compra ya está pagada, no se requieren notificaciones adicionales' });
+    }
     // if (!subscription || !subscription.endpoint || !subscription.keys) {
     //   return res.status(400).json({ error: 'La suscripción no es válida.' });
     // }
@@ -63,13 +66,13 @@ exports.updateStatusOrder = async (req, res, next) => {
 
     const userEmail = user.email;
     const userName = user.name;
-    console.log(userEmail,userName)
+    console.log(userEmail, userName)
     purchaseDetail.status = 'PAID';
 
     const payload = {
       notification: {
         title: 'Seguimiento de Pedido',
-        body: `Número de seguimiento: ${paypalOrderId}`,  
+        body: `Número de seguimiento: ${paypalOrderId}`,
         icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
         vibrate: [200, 100, 200],
         sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
@@ -85,14 +88,14 @@ exports.updateStatusOrder = async (req, res, next) => {
       .catch(err => {
         console.error('Error al enviar notificación:', err);
       });
-      console.log(userEmail,userName)
+    console.log(userEmail, userName)
 
 
-  const mailOptionsSeguimiento = {
-    from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-    to: userEmail,
-    subject: 'Seguimiento de tu Pedido - Pastelería Austin\'s',
-    html: `
+    const mailOptionsSeguimiento = {
+      from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+      to: userEmail,
+      subject: 'Seguimiento de tu Pedido - Pastelería Austin\'s',
+      html: `
       <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
           <div style="text-align: center; padding: 20px;">
@@ -114,13 +117,13 @@ exports.updateStatusOrder = async (req, res, next) => {
         </div>
       </div>
     `,
-  };
+    };
     // Envío de correo electrónico
-const mailOptionsInvitacion = {
-  from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-  to: userEmail,
-  subject: '¡Únete a Pastelería Austin\'s y disfruta de beneficios exclusivos!',
-  html: `
+    const mailOptionsInvitacion = {
+      from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+      to: userEmail,
+      subject: '¡Únete a Pastelería Austin\'s y disfruta de beneficios exclusivos!',
+      html: `
     <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
         <div style="text-align: center; padding: 20px;">
@@ -142,7 +145,7 @@ const mailOptionsInvitacion = {
       </div>
     </div>
   `,
-};
+    };
 
 
 
@@ -162,7 +165,7 @@ const mailOptionsInvitacion = {
         console.log('Correo electrónico enviado con éxito:', info.response);
       }
     });
-  
+
     await purchaseDetail.save();
     res.status(200).json({ message: 'Estado del detalle de compra actualizado correctamente' });
   } catch (error) {
