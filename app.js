@@ -24,7 +24,8 @@ const tareasController = require('./api/controllers/tareas');
 // const makerRoutes = require('./api/routes/maker');
 // const minewRoutes = require('./api/routes/minew');
 // const loggerRoutes = require('./api/routes/logger');
-
+// jj3QHZqroZAeWsBH
+// mongodb+srv://20211036:jj3QHZqroZAeWsBH@cluster0.6qjq7cq.mongodb.net/
 const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/'
     mongoose.connect(url, {
     useUnifiedTopology: true,
