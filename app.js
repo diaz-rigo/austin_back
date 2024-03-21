@@ -14,6 +14,13 @@ const paymentRoutes = require('./api/routes/payment');
 const paymentStripeRoutes = require('./api/routes/paymentStripe');
 const paymentMercadoRoutes = require('./api/routes/paymentMercado');
 const orderRoutes = require('./api/routes/order');
+const tareasController = require('./api/controllers/tareas');
+
+// const tareasController = require('./api/controllers/tareas');
+
+// Llamada a la función que contiene la lógica de las tareas
+// tareasController.ejecutarTareas();
+
 // const makerRoutes = require('./api/routes/maker');
 // const minewRoutes = require('./api/routes/minew');
 // const loggerRoutes = require('./api/routes/logger');
@@ -55,6 +62,8 @@ app.use('/payment', paymentRoutes);
 app.use('/stripe', paymentStripeRoutes);
 app.use('/mercado', paymentMercadoRoutes);
 app.use('/order', orderRoutes);
+// Llamada a la función que contiene la lógica de las tareas
+
 // app.use('/maker', makerRoutes);
 // app.use('/minew', minewRoutes);
 // app.use('/logger', loggerRoutes);

@@ -48,21 +48,22 @@ exports.createSubscription = (req, res, next) => {
 };
 
 function enviarNotificacionBienvenida(subscription) {
-
+    // https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830998/sound/clmb7pi3g12frwqzn3vx.mp3
     const payload = {
         notification: {
             title: "😋🍰 Bienvenido a Austins Repostería-",
             body: " Descubre nuestras deliciosas creaciones.",
             icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
             vibrate: [200, 50, 200],
+            sound: "https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830998/sound/clmb7pi3g12frwqzn3vx.mp3",
             actions: [{
                 action: "explore",
                 title: "Ver nuestras especialidades",
                 url: "https://austins.vercel.app"
-
             }]
         }
     };
+    
     // https://austins.vercel.app/portal/home
     webpush.sendNotification(subscription, JSON.stringify(payload))
         .then(() => {

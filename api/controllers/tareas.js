@@ -1,6 +1,6 @@
 const cron = require('node-cron');
-const Purchase = require('./models/purchase'); // Importa el modelo de la compra
-const User = require('./models/user'); // Importa el modelo del usuario
+const Purchase = require('../models/purchaseSchema'); // Importa el modelo de la compra
+const User = require('../models/user');
 
 "use strict";
 const nodemailer = require("nodemailer");
@@ -14,14 +14,14 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// Programa el proceso de fondo para que se ejecute todos los días a las 12:00 a.m.
-cron.schedule('0 0 * * *', async () => {
+// Programa el proceso de fondo para que se ejecute cada 15 minutos
+cron.schedule('*/15 * * * *', async () => {
     try {
-        // Obtén todas las compras pendientes creadas hace más de 72 horas
-        // const cutoffDate = new Date(Date.now() - 72 * 60 * 60 * 1000); // 72 horas en milisegundos
-        // const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 horas en milisegundos
-        const cutoffDate = new Date(Date.now() - 1* 60 * 60 * 1000); // 4 horas en milisegundos
-        const pendingPurchases = await Purchase.find({ status: 'PENDING', createdAt: { $lte: cutoffDate } });
+        // Obtén la fecha de hace 15 minutos
+        const cutoffDate = new Date(Date.now() - 15 * 60 * 1000); // 15 minutos en milisegundos
+
+        // Encuentra todas las compras pendientes creadas en los últimos 15 minutos
+        const pendingPurchases = await Purchase.find({ status: 'PENDING', createdAt: { $gte: cutoffDate } });
 
         // Procesa cada compra pendiente
         for (const purchase of pendingPurchases) {
