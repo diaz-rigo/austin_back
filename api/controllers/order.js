@@ -48,7 +48,7 @@ exports.updateStatusOrder = async (req, res, next) => {
       return res.status(404).json({ message: 'Detalle de compra no encontrado' });
     }
     // Verificar si el estado de la compra ya es "PAID"
-    if (purchaseDetailId.status === 'PAID') {
+    if (purchase.status === 'PAID') {
       return res.status(200).json({ message: 'La compra ya está pagada, no se requieren notificaciones adicionales' });
     }
     // if (!subscription || !subscription.endpoint || !subscription.keys) {
