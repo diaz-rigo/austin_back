@@ -20,11 +20,10 @@ const transporter = nodemailer.createTransport({
 });
 
 // Programa la tarea cron para ejecutarse cada minuto
-cron.schedule('* * * * *', async () => {
-// cron.schedule('0 0 * * *', async () => {
+// cron.schedule('* * * * *', async () => {
+cron.schedule('0 * * * *', async () => {
 
-
-
+    // cron.schedule('0 0 * * *', async () => {
     console.log('Running a task every minute');
 
     try {
