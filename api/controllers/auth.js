@@ -108,18 +108,7 @@ exports.requestPasswordRecovery = async (req, res) => {
       return res.status(400).json({ error: 'La suscripción no es válida.' });
     }
 
-    // Enviar la notificación push
-    // const notificationPayload = JSON.stringify({
-    //   title: 'Recuperación de Contraseña',
-    //   body: `Se ha solicitado la recuperación de contraseña. Código de verificación: ${verificationCode}`,
-    //   icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-    //   badge: 'https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png',
-    //   vibrate: [200, 100, 200],
-    //   tag: 'password-recovery',
-    //   renotify: true,
-    //   requireInteraction: true,
-    // });
-    // await webpush.sendNotification(subscription, notificationPayload);
+
     const payload = {
       notification: {
         title: 'Recuperación de Contraseña',

@@ -2,8 +2,10 @@
 require('dotenv').config();
 const User = require('../models/user');
 const mongoose = require("mongoose");
-const Purchase = require("../models/purchaseSchema");
-const PurchaseDetail = require("../models/purchaseDetail");
+// const Purchase = require("../models/purchaseSchema");
+// const PurchaseDetail = require("../models/purchaseDetail");
+const VentaDetail = require("../models/ventaDetail");
+const Venta = require("../models/ventaSchema");
 const webpush = require('web-push');
 
 "use strict";
@@ -37,18 +39,18 @@ exports.updateStatusOrder = async (req, res, next) => {
     const { subscription, paypalOrderId } = req.body;
     // const { email, subscription } = req.body;
 
-    const purchase = await Purchase.findOne({ paypalOrderID: paypalOrderId });
-    if (!purchase) {
+    const venta = await Venta.findOne({ paypalOrderID: paypalOrderId });
+    if (!venta) {
       return res.status(404).json({ message: 'Pedido no encontrado' });
     }
 
-    const purchaseDetailId = purchase.details[0];
-    const purchaseDetail = await PurchaseDetail.findById(purchaseDetailId);
-    if (!purchaseDetail) {
+    const ventaDetailId = venta.details[0];
+    const ventaDetail = await VentaDetail.findById(ventaDetailId);
+    if (!ventaDetail) {
       return res.status(404).json({ message: 'Detalle de compra no encontrado' });
     }
     // Verificar si el estado de la compra ya es "PAID"
-    if (purchaseDetail.status === 'PAID') {
+    if (ventaDetail.status === 'PAID') {
       return res.status(200).json({ message: 'La compra ya está pagada, no se requieren notificaciones adicionales' });
     }
     // if (!subscription || !subscription.endpoint || !subscription.keys) {
@@ -59,7 +61,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     }
 
     // Accediendo al usuario asociado al pedido
-    const user = await User.findById(purchase.user);
+    const user = await User.findById(venta.user);
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
@@ -67,7 +69,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     const userEmail = user.email;
     const userName = user.name;
     console.log(userEmail, userName)
-    purchaseDetail.status = 'PAID';
+    ventaDetail.status = 'PAID';
 
     const payload = {
       notification: {
@@ -180,7 +182,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     //   }
     // });
 
-    await purchaseDetail.save();
+    await ventaDetail.save();
     res.status(200).json({ message: 'Estado del detalle de compra actualizado correctamente' });
   } catch (error) {
     console.error('Error al actualizar el estado del detalle de compra:', error);

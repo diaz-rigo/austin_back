@@ -6,10 +6,8 @@ const SECRET = 'EB_FRtODOh3iLf_IzTT7VOACxWFGimWgCDvvZyQfJ1dojDAhwAmYbuvsdbbYY9lW
 const PAYPAL_API = 'https://api-m.sandbox.paypal.com';
 // const PAYPAL_API = 'https://api-m.sandbox.paypal.com';
 const auth = { user: CLIENT, pass: SECRET };
-
-
-const PurchaseDetail = require("../models/purchaseDetail");
-const Purchase = require("../models/purchaseSchema");
+const VentaDetail = require("../models/ventaDetail");
+const Venta = require("../models/ventaSchema");
 const User = require("../models/user");
 
 
@@ -19,21 +17,21 @@ exports.webhook = async (req, res) => {
     const paypalOrderId = body.resource.id;
 
     try {
-        const purchase = await Purchase.findOne({ paypalOrderID: paypalOrderId });
-        if (!purchase) {
-            return res.status(404).send('Purchase not found');
+        const venta = await Venta.findOne({ paypalOrderID: paypalOrderId });
+        if (!venta) {
+            return res.status(404).send('VENTA NO ECONTRADA');
         }
 
-        purchase.status = 'PAID';
-        await purchase.save();
+        venta.status = 'PAID';
+        await venta.save();
 
-        const purchaseDetail = await PurchaseDetail.findById(purchase.details);
-        if (!purchaseDetail) {
-            return res.status(404).send('Purchase detail not found');
+        const ventaDetail = await VentaDetail.findById(venta.details);
+        if (!ventaDetail) {
+            return res.status(404).send('VENTA DETALLE NO ECONTRADO');
         }
         
-        purchaseDetail.status = 'PAID';
-        await purchaseDetail.save();
+        ventaDetail.status = 'PAID';
+        await ventaDetail.save();
 
         res.status(200).send('Notification received');
     } catch (error) {
@@ -81,7 +79,7 @@ exports.createPayment = async (req, res, next) => {
         await user.save();
     }
 
-    let purchaseDetail;
+    let ventaDetail;
 
     try {
         const response = await new Promise((resolve, reject) => {
@@ -98,7 +96,7 @@ exports.createPayment = async (req, res, next) => {
             });
         });
 
-        purchaseDetail = new PurchaseDetail({
+        ventaDetail = new VentaDetail({
             _id: new mongoose.Types.ObjectId(),
             user: user._id,
             products: productos.map(producto => ({
@@ -111,22 +109,22 @@ exports.createPayment = async (req, res, next) => {
             instrucion: instrucion,
             status: 'PENDING'
         });
-        await purchaseDetail.save();
+        await ventaDetail.save();
 
-        const purchase = new Purchase({
+        const venta = new Venta({
             _id: new mongoose.Types.ObjectId(),
             user: user._id,
-            details: purchaseDetail._id,
+            details: ventaDetail._id,
             totalAmount: totalneto,
             paypalOrderID: response.body.id
         });
-        await purchase.save();
+        await venta.save();
 
         res.json({ data: response.body });
     } catch (error) {
-        if (purchaseDetail) {
-            purchaseDetail.status = 'PENDING';
-            await purchaseDetail.save();
+        if (ventaDetail) {
+            ventaDetail.status = 'PENDING';
+            await ventaDetail.save();
         }
         res.status(500).json({ message: error.message });
     }

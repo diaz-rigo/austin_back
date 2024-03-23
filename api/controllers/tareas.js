@@ -1,6 +1,8 @@
 const cron = require('node-cron');
-const Purchase = require('../models/purchaseSchema');
-const PurchaseDetail = require('../models/purchaseDetail');
+// const Purchase = require('../models/purchaseSchema');
+// const PurchaseDetail = require('../models/purchaseDetail');
+const VentaDetail = require("../models/ventaDetail");
+const Venta = require("../models/ventaSchema");
 const Product = require('../models/product');
 const nodemailer = require("nodemailer");
 const User = require("../models/user");
@@ -18,29 +20,29 @@ const transporter = nodemailer.createTransport({
 });
 
 // Programa la tarea cron para ejecutarse cada minuto
-// cron.schedule('* * * * *', async () => {
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('* * * * *', async () => {
+// cron.schedule('0 0 * * *', async () => {
 
-    // cron.schedule('0 0 * * *', async () => {
+
 
     console.log('Running a task every minute');
 
     try {
-        const pendingPurchases = await PurchaseDetail.find({ status: 'PENDING' }).populate('user').populate('products.product');
+        const ventasPendientes = await VentaDetail.find({ status: 'PENDING' }).populate('user').populate('products.product');
 
-        pendingPurchases.forEach(async (purchaseDetail) => {
+        ventasPendientes.forEach(async (ventaDetail) => {
             console.log('Detalles de la compra:');
-            console.log(purchaseDetail);
+            console.log(ventaDetail);
             console.log('--------------------------------------');
 
-            const user = purchaseDetail.user; // Accede al objeto de usuario relacionado
+            const user = ventaDetail.user; // Accede al objeto de usuario relacionado
             const userEmail = user.email; // Utiliza la dirección de correo electrónico del usuario
             const userName = `${user.name} ${user.paternalLastname} ${user.maternalLastname}`; // Nombre completo del usuario
 
             console.log('Correo electrónico del usuario:', userEmail);
 
             // Obtener el detalle de la compra
-            const purchase = await Purchase.findOne({ details: purchaseDetail._id });
+            const venta = await Venta.findOne({ details: ventaDetail._id });
 
             // Construir el cuerpo del mensaje HTML con los detalles de la compra y el nombre del usuario
             // Construir el cuerpo del mensaje HTML con los detalles de la compra y el nombre del usuario
@@ -55,14 +57,14 @@ cron.schedule('0 0 * * *', async () => {
             <p style="color: #555; font-size: 16px;">Hola ${userName},</p>
             <div style="background-color: #ffffff; color: #ff5733; border-radius: 5px; padding: 10px; margin-bottom: 20px;">
                 <p style="font-size: 14px; font-weight: bold;">Detalles de la Entrega:</p>
-                <p style="font-size: 14px;">Tipo de entrega: ${purchaseDetail.deliveryType}</p>
+                <p style="font-size: 14px;">Tipo de entrega: ${ventaDetail.deliveryType}</p>
           
             </div>
             <p style="color: #555; font-size: 16px;">Tenemos una compra pendiente en tu cuenta. Aquí está el primer producto:</p>
-            <a href="https://austins.vercel.app/portal/detail/${purchaseDetail.products[0].product._id}" style="background-color: #ff5733; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;">Ver Detalles del Producto</a>
-            <p style="font-size: 16px;">Nombre del Producto: ${purchaseDetail.products[0].product.name}</p>
-            <img src="${purchaseDetail.products[0].product.images[0]}" alt="${purchaseDetail.products[0].product.name}" style="max-width: 200px; margin: 0 auto; display: block; margin-bottom: 10px;">
-            <p style="font-size: 14px;">ID de la Compra: ${purchase.paypalOrderID}</p>
+            <a href="https://austins.vercel.app/portal/detail/${ventaDetail.products[0].product._id}" style="background-color: #ff5733; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;">Ver Detalles del Producto</a>
+            <p style="font-size: 16px;">Nombre del Producto: ${ventaDetail.products[0].product.name}</p>
+            <img src="${ventaDetail.products[0].product.images[0]}" alt="${ventaDetail.products[0].product.name}" style="max-width: 200px; margin: 0 auto; display: block; margin-bottom: 10px;">
+            <p style="font-size: 14px;">ID de la Compra: ${venta.paypalOrderID}</p>
             <div style="margin-top: 20px;">
             
                 <a  style="background-color: #007bff; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; margin-left: 10px;">Ir a Seguimiento de Pedido</a>
