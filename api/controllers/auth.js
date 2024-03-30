@@ -39,9 +39,13 @@ webpush.setVapidDetails(
 );
 
 // {"message":"Token de verificación no válido."}
+// function generateVerificationCode() {
+//   // Generar un código de verificación, por ejemplo, un número aleatorio de 6 dígitos
+//   return Math.floor(100000 + Math.random() * 900000).toString();
+// }
 function generateVerificationCode() {
-  // Generar un código de verificación, por ejemplo, un número aleatorio de 6 dígitos
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  // Generar un código de verificación de 4 dígitos
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 async function saveVerificationCode(user, verificationCode) {

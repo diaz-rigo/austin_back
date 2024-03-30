@@ -10,7 +10,7 @@ router.put("/:id", ProductController.update);
 router.delete("/:id", ProductController.delete);
 
 router.put("/:category/:id/image", upload.single('image'), ProductController.updateImage);
-// router.put("/:category/:id/image", upload.array('images'), ProductController.updateImages); // `upload.array('images', 5)` significa que se pueden subir hasta 5 imágenes
+
 
 
 
