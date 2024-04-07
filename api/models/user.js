@@ -14,7 +14,7 @@ const userSchema = mongoose.Schema({
     maternalLastname: { type: String },
     paternalLastname: { type: String },
     phone: { type: String },
-    status: { type: String, required: true, default: 'ACTIVE' },
+    status: { type: String, required: true, default: 'INACTIVE' },
     address: { type: String },
     city: { type: String },
     postalCode: { type: String },
