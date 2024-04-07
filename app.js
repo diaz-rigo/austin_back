@@ -15,16 +15,8 @@ const paymentStripeRoutes = require('./api/routes/paymentStripe');
 const paymentMercadoRoutes = require('./api/routes/paymentMercado');
 const orderRoutes = require('./api/routes/order');
 const tareasController = require('./api/controllers/tareas');
-
-// const tareasController = require('./api/controllers/tareas');
-
-// Llamada a la función que contiene la lógica de las tareas
-// tareasController.ejecutarTareas();
-
-// const makerRoutes = require('./api/routes/maker');
-// const minewRoutes = require('./api/routes/minew');
-// const loggerRoutes = require('./api/routes/logger');
-// jj3QHZqroZAeWsBH
+const ADMINREPORT = require('./api/routes/adminReport');
+const PUBLICREPORT = require('./api/routes/publicReport');
 
 const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/'
     mongoose.connect(url, {
@@ -63,6 +55,8 @@ app.use('/payment', paymentRoutes);
 app.use('/stripe', paymentStripeRoutes);
 app.use('/mercado', paymentMercadoRoutes);
 app.use('/order', orderRoutes);
+app.use('/admin', ADMINREPORT);
+app.use('/publicR', PUBLICREPORT);
 // Llamada a la función que contiene la lógica de las tareas
 
 // app.use('/maker', makerRoutes);

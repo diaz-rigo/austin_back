@@ -92,7 +92,7 @@ const enviarNotificacionPush = async (subscription, payload) => {
 // Controladores
 exports.crearPedido = async (req, res, next) => {
   const datosPedido = req.body;
-
+  console.log(datosPedido)
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
@@ -131,24 +131,24 @@ exports.crearPedido = async (req, res, next) => {
       codigoPedido: codigoPedido,
     });
 
-    const detallePedido = new PedidoDetalle({
+    
+    // Verificar y asignar los campos del detalle del pedido según los datos recibidos
+    const detallePedidoData = {
       _id: new mongoose.Types.ObjectId(),
       pedido: pedido._id,
-      // Asignar los campos del detalle del pedido según los datos recibidos
       nombre: datosPedido.nombre || '',
-      cantidad: datosPedido.selectedQuantity || 0,
-      dia: new Date(datosPedido.dia),
+      cantidad: datosPedido.cantidad || 0,
+      dia: datosPedido.dia ? new Date(datosPedido.dia) : new Date(), // Si no se proporciona la fecha, usar la fecha actual
       hora: datosPedido.hora || '',
-      modo: datosPedido.selectedModo || '',
+      modo: datosPedido.modo || '',
       modoPersonalizado: datosPedido.modoPersonalizado || '',
-      sabor: datosPedido.selectedFlavor || '',
+      sabor: datosPedido.sabor ? datosPedido.sabor.name : '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
       precioTotal: datosPedido.precioTotal || 0,
-      estadoPedido: datosPedido.estadoPedido || '',
-      notasAdicionales: datosPedido.notasAdicionales || ''
-    });
+    };
 
     // Guardar el detalle del pedido en la base de datos
+    const detallePedido = new PedidoDetalle(detallePedidoData);
     await detallePedido.save();
 
     // Asociar el detalle del pedido al pedido principal
@@ -161,40 +161,71 @@ exports.crearPedido = async (req, res, next) => {
     if (!existingUser) {
       const mailOptionsSeguimiento = {
         from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-        to:  datosPedido.correo ,
-        subject: 'Seguimiento de tu Pedido - Pastelería Austin\'s',
+        to: datosPedido.correo,
+        subject: '¡Tu pedido ha sido solicitado! - Pastelería Austin\'s',
         html: `
           <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
               <div style="text-align: center; padding: 20px;">
-                <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
+                <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Logo de Pastelería Austin's" style="max-width: 100px;">
               </div>
               <div style="text-align: center; padding: 20px;">
-                <h2 style="font-size: 24px; color: #333;">¡Gracias por tu compra en Pastelería Austin's!</h2>
-                <p style="color: #555; font-size: 16px;">Tu pedido ha sido procesado con éxito y pronto estará en camino. A continuación, te proporcionamos el número de seguimiento de tu pedido y las instrucciones para consultar su estado:</p>
-                <p style="font-weight: bold; font-size: 16px;">Número de Seguimiento: ${codigoPedido}</p>
-                <p style="color: #555; font-size: 16px;">Instrucciones para consultar el estado del pedido:</p>
+                <p style="color: #555; font-size: 16px;">¡Gracias por confiar en Pastelería Austin's para tus deliciosos postres! Tu pedido ha sido solicitado con éxito y pronto nos comunicaremos.</p>
+                <p style="font-weight: bold; font-size: 16px;">CODIGO PEDIDO: ${codigoPedido}</p>
+                <p style="color: #555; font-size: 16px;">Sigue estos pasos para consultar el estado de tu pedido:</p>
                 <ol style="color: #555; font-size: 16px;">
-                  <li>Ingresa a nuestro sitio web.</li>
-                  <li>Ve a la sección de "Seguimiento de Pedidos" o "Mis Pedidos".</li>
-                  <li>Ingresa el número de seguimiento proporcionado arriba.</li>
+                  <li>Ingresa a nuestro <a href="https://austins.vercel.app">sitio web</a>.</li>
+                  <li>Dirígete a la sección de "Seguimiento de Pedidos" o "Mis Pedidos".</li>
+                  <li>Ingresa el número de pedido proporcionado arriba.</li>
                   <li>Consulta el estado actualizado de tu pedido.</li>
                 </ol>
               </div>
-              <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu compra! Si tienes alguna pregunta o necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
+              <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu pedido! Si necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
             </div>
           </div>
         `,
       };
 
+
       // Envío de correo electrónico
       await enviarCorreo(mailOptionsSeguimiento);
+      // console.log(datosPedido.suscripcion)
 
       // Enviar notificación push si se proporciona una suscripción
-      if (datosPedido.subscription) {
-        await enviarNotificacionPush(datosPedido.subscription, { title: 'Su pedido está en proceso', body: 'Pronto nos pondremos en contacto con usted.' });
-      }
+      // Envío de la notificación push si se proporciona una suscripción
+      if (datosPedido.suscripcion) {
 
+        const payload = {
+          notification: {
+            title: 'Seguimiento de tu Pedido',
+            body: `Tu pedido ha sido solicitado. Sigue el estado de tu pedido con el código: ${codigoPedido}`,
+            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+            vibrate: [200, 100, 200],
+            sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
+            priority: 'high',
+            data: {
+              url: "https://austins.vercel.app" // Enlace al sitio o aplicación
+            },
+            actions: [
+              { action: "ver_pedido", title: "Ver Pedido" },
+            ],
+            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // unit is seconds. if both expiry and timeToLive are given, expiry will take precedence
+            timeToLive: 28 * 86400,
+            silent: false, // gcm, apn, will override badge, sound, alert and priority if set to true on iOS, will omit `notification` property and send as data-only on Android/GCM
+
+          }
+        };
+
+
+        try {
+          // Envío de la notificación push
+          await enviarNotificacionPush(datosPedido.suscripcion, payload);
+          console.log('Notificación push enviada exitosamente');
+        } catch (error) {
+          console.error('Error al enviar la notificación push:', error);
+          // Manejar el error de manera adecuada
+        }
+      }
       // Marcar al usuario como activo
       await nuevoUsuario.save();
     }
@@ -212,129 +243,6 @@ exports.crearPedido = async (req, res, next) => {
   }
 };
 
-// Controladores
-// exports.crearPedido = async (req, res, next) => {
-//   const datosPedido = req.body;
-
-//   try {
-//     // Verificar si el usuario ya existe en la base de datos
-//     const existingUser = await User.findOne({ email: datosPedido.correo });
-
-//     // Si el usuario ya existe, enviar mensaje de activación de cuenta
-//     if (existingUser) {
-//       return res.status(409).json({
-//         message: ERROR_USER_ALREADY_EXISTS,
-//       });
-//     }
-
-//     // Crear un nuevo objeto de usuario
-//     const nuevoUsuario = new User({
-//       _id: new mongoose.Types.ObjectId(),
-//       name: datosPedido.nombre || '',
-//       maternalLastname: datosPedido.apellido1 || '',
-//       paternalLastname: datosPedido.apellido2 || '',
-//       email: datosPedido.correo || '',
-//       phone: datosPedido.telefono || '',
-//       // Asignar contraseña y nombre de usuario por defecto
-//       password: 'contraseñaPorDefecto',
-//       status: 'INACTIVE',
-//     });
-
-//     // Guardar el nuevo usuario en la base de datos
-//     await nuevoUsuario.save();
-
-//     // Generar un código de pedido único
-//     const codigoPedido = generarCodigoPedido();
-
-//     // Crear un nuevo objeto de pedido y detalle de pedido
-//     const pedido = new Pedido({
-//       _id: new mongoose.Types.ObjectId(),
-//       usuario: nuevoUsuario._id,
-//       estadoPedido: datosPedido.estadoPedido || 'Pendiente',
-//       codigoPedido: codigoPedido,
-//     });
-
-//     const detallePedido = new PedidoDetalle({
-//       _id: new mongoose.Types.ObjectId(),
-//       pedido: pedido._id,
-//       // Asignar los campos del detalle del pedido según los datos recibidos
-//       nombre: datosPedido.nombre || '',
-//       cantidad: datosPedido.selectedQuantity || 0,
-//       dia: new Date(datosPedido.dia),
-//       hora: datosPedido.hora || '',
-//       modo: datosPedido.selectedModo || '',
-//       modoPersonalizado: datosPedido.modoPersonalizado || '',
-//       sabor: datosPedido.selectedFlavor || '',
-//       saborPersonalizado: datosPedido.saborpersonalizado || '',
-//       precioTotal: datosPedido.precioTotal || 0,
-//       estadoPedido: datosPedido.estadoPedido || '',
-//       notasAdicionales: datosPedido.notasAdicionales || ''
-//     });
-
-//     // Guardar el detalle del pedido en la base de datos
-//     await detallePedido.save();
-
-//     // Asociar el detalle del pedido al pedido principal
-//     pedido.detallePedido.push(detallePedido);
-
-//     // Guardar el pedido en la base de datos
-//     await pedido.save();
-
-//     // Enviar notificación por correo y mensaje de notificación si es la primera vez del usuario
-//     if (!existingUser) {
-//       const mailOptionsSeguimiento = {
-//         from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-//         to:  datosPedido.correo ,
-//         subject: 'Seguimiento de tu Pedido - Pastelería Austin\'s',
-//         html: `
-//           <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
-//             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
-//               <div style="text-align: center; padding: 20px;">
-//                 <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
-//               </div>
-//               <div style="text-align: center; padding: 20px;">
-//                 <h2 style="font-size: 24px; color: #333;">¡Gracias por tu compra en Pastelería Austin's!</h2>
-//                 <p style="color: #555; font-size: 16px;">Tu pedido ha sido procesado con éxito y pronto estará en camino. A continuación, te proporcionamos el número de seguimiento de tu pedido y las instrucciones para consultar su estado:</p>
-//                 <p style="font-weight: bold; font-size: 16px;">Número de Seguimiento: ${paypalOrderId}</p>
-//                 <p style="color: #555; font-size: 16px;">Instrucciones para consultar el estado del pedido:</p>
-//                 <ol style="color: #555; font-size: 16px;">
-//                   <li>Ingresa a nuestro sitio web.</li>
-//                   <li>Ve a la sección de "Seguimiento de Pedidos" o "Mis Pedidos".</li>
-//                   <li>Ingresa el número de seguimiento proporcionado arriba.</li>
-//                   <li>Consulta el estado actualizado de tu pedido.</li>
-//                 </ol>
-//               </div>
-//               <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu compra! Si tienes alguna pregunta o necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
-//             </div>
-//           </div>
-//         `,
-//       };
-
-//       // Envío de correo electrónico
-//       await enviarCorreo(mailOptionsSeguimiento);
-
-//       // Enviar correo de seguimiento de pedido
-//       // await enviarCorreoSeguimientoPedido(datosPedido.correo);
-
-//       // Si tienes implementado el sistema de notificaciones push, aquí podrías enviar una notificación al usuario
-//       await enviarNotificacionPush(datosPedido.correo, 'Su pedido está en proceso', 'Pronto nos pondremos en contacto con usted.');
-
-//       // Marcar al usuario como activo
-//       // nuevoUsuario.status = 'ACTIVE';
-//       await nuevoUsuario.save();
-//     }
-
-//     res.status(201).json({
-//       message: "Pedido de pastelería creado con éxito",
-//       pedido: pedido
-//     });
-//   } catch (error) {
-//     // En caso de que ocurra un error, manejarlo adecuadamente y enviar una respuesta al cliente
-//     res.status(500).json({
-//       error: error.message
-//     });
-//   }
-// };
 
 exports.updateStatusOrder = async (req, res, next) => {
   try {
