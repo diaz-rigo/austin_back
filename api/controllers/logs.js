@@ -1,11 +1,13 @@
 const Log = require('../models/logs');
 const useragent = require('express-useragent');
+
 exports.saveRequestLogs = async (req, res, next) => {
     try {
         const userAgent = useragent.parse(req.headers['user-agent']);
+        const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         const log = new Log({
             date: new Date(),
-            message: `Request to ${req.method} ${req.originalUrl} from ${req.ip}`,
+            message: `Request to ${req.method} ${req.originalUrl} from ${ip}`,
             level: 'INFO',
             userAgent: {
                 browser: userAgent.browser,
