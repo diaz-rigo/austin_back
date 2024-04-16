@@ -4,6 +4,13 @@ const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/auth');
 
+// Importa el middleware para guardar los logs de las solicitudes
+const { saveRequestLogs } = require('../controllers/logs');
+
+// Aplica el middleware a todas las solicitudes
+router.use(saveRequestLogs);
+
+
 // Otras rutas existentes...
 router.post("/sign-up-and-verify-email", AuthController.signUpAndVerifyEmail);
 router.post("/sign-in", AuthController.signIn);

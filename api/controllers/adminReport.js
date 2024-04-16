@@ -29,6 +29,7 @@ const transporter = nodemailer.createTransport({
 
 
 exports.consultapedidos = async (req, res, next) => {
+  
   try {
     // Realizar la consulta a la base de datos para obtener todos los pedidos
     const pedidos = await Pedido.find()
