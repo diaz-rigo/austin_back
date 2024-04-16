@@ -96,8 +96,8 @@ const enviarNotificacionPush = async (subscription, payload) => {
 exports.crearPedido = async (req, res, next) => {
   const datosPedido = req.body;
   const files = req.files; // Obtener los archivos cargados si se utiliza el middleware adecuado en Express
-
   console.log(datosPedido)
+  
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
@@ -140,31 +140,14 @@ exports.crearPedido = async (req, res, next) => {
       codigoPedido: codigoPedido,
     });
 
-    try {
-      const path = require('path');
     
-      // Verificar si se proporcionó un archivo en la solicitud
-      if (!datosPedido.archivo || !datosPedido.archivo.objectURL) {
-        throw new Error('No se proporcionó ningún archivo');
-      }
-    
-      // Obtener el nombre original del archivo
-      const originalFileName = path.parse(datosPedido.archivo.objectURL.changingThisBreaksApplicationSecurity).name;
-    
-      // Subir el archivo a Cloudinary
-      const result = await cloudinary.uploader.upload(datosPedido.archivo.objectURL.changingThisBreaksApplicationSecurity, {
-        folder: `design`,
-        public_id: originalFileName // Usar el nombre de archivo sin la extensión
-      });
-      // Resto del código
-    } catch (error) {
-      console.error('Error al subir archivo a Cloudinary:', error);
-      return res.status(500).json({ message: 'Error al subir archivo a Cloudinary' });
-    }
-    
-    
+     // Calcular el precio total del pedido
+     const precioPorKilo = datosPedido.sabor.precioPorKilo || 0; // Obtener el precio por kilo del sabor
+     const cantidad = datosPedido.cantidad || 0;
+     const precioTotal = precioPorKilo * cantidad;
        //const result = await cloudinary.uploader.upload(req.file.path);
     // Verificar y asignar los campos del detalle del pedido según los datos recibidos
+
     const detallePedidoData = {
       _id: new mongoose.Types.ObjectId(),
       pedido: pedido._id,
@@ -176,8 +159,8 @@ exports.crearPedido = async (req, res, next) => {
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       sabor: datosPedido.sabor ? datosPedido.sabor.name : '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
-      precioTotal: datosPedido.precioTotal || 0,
-      imagen: result.secure_url, // Guardar la URL de la imagen en Cloudinary
+      precioTotal: precioTotal,
+      color: datosPedido.color_personalizado,
 
     };
 
@@ -417,21 +400,39 @@ exports.updateStatusOrder = async (req, res, next) => {
   }
 };
 
+exports.actualizarImagenPedido = async (req, res) => {
+  const path = require('path')
+  const pedidoId = req.params.id; // Obtener el ID del pedido de los parámetros de la solicitud
+  const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
+  console.log(pedidoId)
+  console.log(nuevaImagen)
+  try {
+    // Verificar si se proporcionó un archivo en la solicitud
+    if (!req.file) {
+      throw new Error('No se proporcionó ningún archivo');
+    }
 
-  exports.actualizarImagenPedido = (req, res) => {
-    const pedidoId = req.params.id; // Obtener el ID del pedido de los parámetros de la solicitud
-    const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
+    // Subir el archivo a Cloudinary
+    const result = await cloudinary.uploader.upload(nuevaImagen, {
+      folder: `design`,
+      use_filename: true // Usar el nombre de archivo original sin la extensión
+    });
 
     // Actualizar la imagen del pedido en la base de datos
-    PedidoDetalle.findByIdAndUpdate(pedidoId, { imagen: nuevaImagen }, { new: true }, (err, pedidoActualizado) => {
-      if (err) {
-        console.error('Error al actualizar la imagen del pedido:', err);
-        return res.status(500).json({ error: 'Error interno del servidor' });
-      }
-      if (!pedidoActualizado) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-      // Devolver el pedido actualizado como respuesta
-      res.status(200).json({ message: 'Imagen del pedido actualizada correctamente', pedido: pedidoActualizado });
-    });
-  };
+    const pedidoActualizado = await PedidoDetalle.findByIdAndUpdate(
+      pedidoId,
+      { imagen: result.secure_url }, // Guardar la URL segura de la imagen en la base de datos
+      { new: true }
+    );
+
+    if (!pedidoActualizado) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    // Devolver el pedido actualizado como respuesta
+    res.status(200).json({ message: 'Imagen del pedido actualizada correctamente', pedido: pedidoActualizado });
+  } catch (error) {
+    console.error('Error al actualizar imagen del pedido:', error);
+    return res.status(500).json({ message: 'Error al actualizar imagen del pedido' });
+  }
+};
