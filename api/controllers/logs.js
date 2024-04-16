@@ -1,12 +1,12 @@
 const Log = require('../models/logs'); // Importa el modelo Logger
 
-
 exports.saveRequestLogs = async (req, res, next) => {
     try {
         // Crea un nuevo registro de log
-        const log = new Logger({
+        const log = new Log({
             date: new Date(), // Fecha y hora actual
-            description: `Request to ${req.method} ${req.originalUrl} from ${req.ip}`, // Descripción de la solicitud
+            message: `Request to ${req.method} ${req.originalUrl} from ${req.ip}`, // Descripción de la solicitud
+            level: 'INFO', // Nivel de log (puede ajustarse según tus necesidades)
         });
 
         // Guarda el registro en la base de datos
