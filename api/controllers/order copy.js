@@ -10,9 +10,6 @@ const Pedido = require('../models/order');
 const PedidoDetalle = require('../models/orderDetail');
 const VentaDetail = require("../models/ventaDetail");
 const Venta = require("../models/ventaSchema");
-const path = require('path');
-const fs = require('fs');
-const cloudinary = require('../utils/cloudinary'); // Importa la configuración de Cloudinary
 
 // Configurar variables de entorno
 dotenv.config();
@@ -95,17 +92,11 @@ const enviarNotificacionPush = async (subscription, payload) => {
 // Controladores
 exports.crearPedido = async (req, res, next) => {
   const datosPedido = req.body;
-  const files = req.files; // Obtener los archivos cargados si se utiliza el middleware adecuado en Express
-
   console.log(datosPedido)
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
-      // const fileName = path.parse(req.file.originalname).name;
-      // const result = await cloudinary.uploader.upload(req.file.path, {
-      //   folder: `${category}/${_id}`,
-      //   public_id: fileName // Usar el nombre de archivo sin la extensión
-      // });
+
     // Si el usuario ya existe, enviar mensaje de activación de cuenta
     if (existingUser) {
       return res.status(409).json({
@@ -140,30 +131,7 @@ exports.crearPedido = async (req, res, next) => {
       codigoPedido: codigoPedido,
     });
 
-    try {
-      const path = require('path');
     
-      // Verificar si se proporcionó un archivo en la solicitud
-      if (!datosPedido.archivo || !datosPedido.archivo.objectURL) {
-        throw new Error('No se proporcionó ningún archivo');
-      }
-    
-      // Obtener el nombre original del archivo
-      const originalFileName = path.parse(datosPedido.archivo.objectURL.changingThisBreaksApplicationSecurity).name;
-    
-      // Subir el archivo a Cloudinary
-      const result = await cloudinary.uploader.upload(datosPedido.archivo.objectURL.changingThisBreaksApplicationSecurity, {
-        folder: `design`,
-        public_id: originalFileName // Usar el nombre de archivo sin la extensión
-      });
-      // Resto del código
-    } catch (error) {
-      console.error('Error al subir archivo a Cloudinary:', error);
-      return res.status(500).json({ message: 'Error al subir archivo a Cloudinary' });
-    }
-    
-    
-       //const result = await cloudinary.uploader.upload(req.file.path);
     // Verificar y asignar los campos del detalle del pedido según los datos recibidos
     const detallePedidoData = {
       _id: new mongoose.Types.ObjectId(),
@@ -177,8 +145,6 @@ exports.crearPedido = async (req, res, next) => {
       sabor: datosPedido.sabor ? datosPedido.sabor.name : '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
       precioTotal: datosPedido.precioTotal || 0,
-      imagen: result.secure_url, // Guardar la URL de la imagen en Cloudinary
-
     };
 
     // Guardar el detalle del pedido en la base de datos
@@ -416,22 +382,3 @@ exports.updateStatusOrder = async (req, res, next) => {
     res.status(500).json({ message: ERROR_INTERNAL_SERVER });
   }
 };
-
-
-  exports.actualizarImagenPedido = (req, res) => {
-    const pedidoId = req.params.id; // Obtener el ID del pedido de los parámetros de la solicitud
-    const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
-
-    // Actualizar la imagen del pedido en la base de datos
-    PedidoDetalle.findByIdAndUpdate(pedidoId, { imagen: nuevaImagen }, { new: true }, (err, pedidoActualizado) => {
-      if (err) {
-        console.error('Error al actualizar la imagen del pedido:', err);
-        return res.status(500).json({ error: 'Error interno del servidor' });
-      }
-      if (!pedidoActualizado) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-      // Devolver el pedido actualizado como respuesta
-      res.status(200).json({ message: 'Imagen del pedido actualizada correctamente', pedido: pedidoActualizado });
-    });
-  };

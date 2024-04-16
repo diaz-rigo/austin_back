@@ -3,7 +3,10 @@ const app = express();
 require('dotenv').config()
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-
+function logRequest(req, res, next) {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+}
 const authRoutes = require('./api/routes/auth');
 const userRoutes = require('./api/routes/user');
 const categoryRoutes = require('./api/routes/category');
@@ -44,7 +47,10 @@ app.use((req, res, next) => {
 
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
+// Middleware de registro
 
+// Utilizar el middleware de registro
+app.use(logRequest);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/category', categoryRoutes);
@@ -59,9 +65,6 @@ app.use('/admin', ADMINREPORT);
 app.use('/publicR', PUBLICREPORT);
 // Llamada a la función que contiene la lógica de las tareas
 
-// app.use('/maker', makerRoutes);
-// app.use('/minew', minewRoutes);
-// app.use('/logger', loggerRoutes);
 
 app.use((req, res, next) => {
     const error = new Error(' error Not found 12 01 2024');

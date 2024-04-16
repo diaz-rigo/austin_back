@@ -18,4 +18,8 @@ router.post("/request-password-recovery", AuthController.requestPasswordRecovery
 router.post("/verify-code-and-reset-password", AuthController.verifyCodeAndResetPassword);
 router.post("/verify-verification-code", AuthController.verificationcode    );
 // \auth\verify-code-and-reset-password
+router.post("/consulta_us_tel_correo", AuthController.consulta_us_tel_correo);
+router.post("/verificca_respuest", AuthController.verfifica_respueta);
+router.post("/cambiarContrasena_", AuthController.cambiarContrasena);
+
 module.exports = router;

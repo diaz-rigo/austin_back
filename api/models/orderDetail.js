@@ -13,12 +13,14 @@ const pedidoDetalleSchema = mongoose.Schema({
     tipoProducto: { type: String },
     tamañoPorción: { type: String },
     decoracion: { type: String },
+    color: { type: String },
     mensajePersonalizado: { type: String },
     entregaEspecial: { type: String },
     preferenciasDieteticas: { type: String },
     precioTotal: { type: Number },
     estadoPedido: { type: String },
-    notasAdicionales: { type: String }
+    notasAdicionales: { type: String },
+    imagen: { type: String }
 }, { versionKey: false });
 
 module.exports = mongoose.model('PedidoDetalle', pedidoDetalleSchema);
