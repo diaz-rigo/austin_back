@@ -13,7 +13,7 @@ const Venta = require("../models/ventaSchema");
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('../utils/cloudinary'); // Importa la configuración de Cloudinary
-
+const jwt = require('jsonwebtoken');
 // Configurar variables de entorno
 dotenv.config();
 
@@ -111,7 +111,29 @@ exports.crearPedido = async (req, res, next) => {
       return res.status(409).json({
         message: ERROR_USER_ALREADY_EXISTS,
       });
+      const token = jwt.sign(
+        { userId: nuevoUsuario._id },
+        process.env.JWT_KEY,
+        { expiresIn: '24h' } // El token expira en 24 horas
+      );
+  
+      // Enviar correo de activación
+      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
+      const mailOptionsActivacion = {
+        from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+        to: datosPedido.correo,
+        subject: 'Activa tu cuenta en Pastelería Austin\'s',
+        html: `
+          <p>¡Hola ${datosPedido.nombre}!</p>
+          <p>Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
+          <p><a href="${activationLink}">${activationLink}</a></p>
+          <p>Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
+        `,
+      };
+      await enviarCorreo(mailOptionsActivacion);
+  
     }
+
 
     // Crear un nuevo objeto de usuario
     const nuevoUsuario = new User({
