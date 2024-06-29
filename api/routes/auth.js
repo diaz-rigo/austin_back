@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/auth');
+const AccountActivationController = require('../controllers/accountActivation');
 
 // Importa el middleware para guardar los logs de las solicitudes
 const { saveRequestLogs } = require('../controllers/logs');
@@ -28,5 +29,9 @@ router.post("/verify-verification-code", AuthController.verificationcode    );
 router.post("/consulta_us_tel_correo", AuthController.consulta_us_tel_correo);
 router.post("/verificca_respuest", AuthController.verfifica_respueta);
 router.post("/cambiarContrasena_", AuthController.cambiarContrasena);
+
+
+// Nueva ruta para activar la cuenta
+router.post("/activate", AccountActivationController.activarCuenta);
 
 module.exports = router;
