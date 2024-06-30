@@ -56,7 +56,7 @@ exports.sendActivationEmail = async (req, res) => {
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
           <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
-          <p style="font-size: 16px;">¡Hola ${existingUser}!</p>
+          <p style="font-size: 16px;">¡Hola ${existingUser.name}!</p>
           <p style="font-size: 16px;">Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
           <p style="font-size: 18px; text-align: center;"><a href="${activationLink}" style="color: #d17a3b; text-decoration: none;">Activar mi cuenta</a></p>
           <p style="font-size: 16px;">Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
@@ -136,15 +136,18 @@ async function enviarCorreoElectronico(user, password) {
     to: user.email,
     subject: '¡Cuenta Activada!',
     html: `
-      <h1 style="color: #333; font-family: Arial, sans-serif;">¡Cuenta Activada!</h1>
-      <p style="font-size: 16px;">¡Hola ${user.username}!</p>
-      <p style="font-size: 16px;">Tu cuenta ha sido activada correctamente.</p>
-      <p style="font-size: 16px;">Puedes acceder al sitio con la siguiente contraseña:</p>
-      <p style="font-size: 20px; font-weight: bold;">${password}</p>
-      <p style="font-size: 16px;">¡Gracias por registrarte!</p>
-      <div style="font-size: 24px;">🎉🌟😊</div>
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
+        <h1 style="color: #d17a3b; text-align: center;">¡Cuenta Activada!</h1>
+        <p style="font-size: 16px; text-align: center;">¡Hola ${user.name}!</p>
+        <p style="font-size: 16px; text-align: center;">Tu cuenta ha sido activada correctamente.</p>
+        <p style="font-size: 16px; text-align: center;">Puedes acceder al sitio con la siguiente contraseña:</p>
+        <p style="font-size: 20px; font-weight: bold; text-align: center; color: #d17a3b;">${password}</p>
+        <p style="font-size: 16px; text-align: center;">¡Gracias por registrarte!</p>
+        <div style="font-size: 24px; text-align: center;">🎉🌟😊</div>
+      </div>
     `
   };
+  
 
   // Enviar el correo electrónico
   try {
