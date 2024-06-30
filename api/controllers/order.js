@@ -49,6 +49,7 @@ webpush.setVapidDetails(
 
 // Mensajes de error
 const ERROR_USER_ALREADY_EXISTS = "El correo ya está registrado. Por favor, active su cuenta para hacer el pedido.";
+const ERROR_USER_ALREADY_EXISTS_ACTIVATE = "Este correo ya está registrado y activado. Por favor, inicie sesión para hacer su pedido.";
 const ERROR_ORDER_NOT_FOUND = "Pedido no encontrado";
 const ERROR_ORDER_DETAIL_NOT_FOUND = "Detalle de compra no encontrado";
 const ERROR_INVALID_SUBSCRIPTION = "La suscripción no es válida.";
@@ -107,8 +108,8 @@ exports.crearPedido = async (req, res, next) => {
     if (existingUser) {
       // Verificar si el usuario ya está activo
       if (existingUser.status === 'ACTIVE') {
-        return res.status(200).json({
-          message: 'El usuario ya tiene una cuenta activa. Por favor, inicie sesión.',
+        return res.status(409).json({
+          message: ERROR_USER_ALREADY_EXISTS_ACTIVATE,
         });
       }
     
