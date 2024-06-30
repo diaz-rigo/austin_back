@@ -56,7 +56,7 @@ exports.sendActivationEmail = async (req, res) => {
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
           <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
-          <p style="font-size: 16px;">¡Hola ${existingUser.name}!</p>
+          <p style="font-size: 16px;">¡Hola ${existingUser}!</p>
           <p style="font-size: 16px;">Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
           <p style="font-size: 18px; text-align: center;"><a href="${activationLink}" style="color: #d17a3b; text-decoration: none;">Activar mi cuenta</a></p>
           <p style="font-size: 16px;">Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
