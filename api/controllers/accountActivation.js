@@ -28,6 +28,7 @@ exports.sendActivationEmail = async (req, res) => {
   try {
     // Verificar si el usuario existe en la base de datos
     const existingUser = await User.findOne({ email: email });
+    console.log("cuenta: encontrado",existingUser)
     if (!existingUser) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
