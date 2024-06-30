@@ -33,5 +33,6 @@ router.post("/cambiarContrasena_", AuthController.cambiarContrasena);
 
 // Nueva ruta para activar la cuenta
 router.post("/activate", AccountActivationController.activarCuenta);
+router.post('/send-activation-email', AccountActivationController.sendActivationEmail);
 
 module.exports = router;
