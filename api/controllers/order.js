@@ -170,10 +170,10 @@ exports.crearPedido = async (req, res, next) => {
 
 
     // Calcular el precio total del pedido
-    const precioPorKilo = datosPedido.sabor?.precioPorKilo || 0; // Obtener el precio por kilo del sabor, si está disponible
+    const precioPorKilo = datosPedido.sabor?.precioPorKilo || 400; // Obtener el precio por kilo del sabor, si está disponible
 
 
-    const cantidad = datosPedido.cantidad || 400;
+    const cantidad = datosPedido.cantidad || 0;
     const precioTotal = precioPorKilo * cantidad;
     //const result = await cloudinary.uploader.upload(req.file.path);
     // Verificar y asignar los campos del detalle del pedido según los datos recibidos
@@ -185,7 +185,8 @@ exports.crearPedido = async (req, res, next) => {
       cantidad: datosPedido.cantidad || 0,
       dia: datosPedido.dia ? new Date(datosPedido.dia) : new Date(), // Si no se proporciona la fecha, usar la fecha actual
       hora: datosPedido.hora || '',
-      modo: datosPedido.modo || '',
+      modo: datosPedido.modo?  datosPedido.modo : datosPedido.modoPersonalizado || '',
+      modoPersonalizado: datosPedido.modoPersonalizado || '',
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
