@@ -432,16 +432,18 @@ exports.updateStatusOrder = async (req, res, next) => {
 };
 
 exports.actualizarImagenPedido = async (req, res) => {
-  const path = require('path')
+  const path = require('path');
   const pedidoId = req.params.id; // Obtener el ID del pedido de los parámetros de la solicitud
-  const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
-  console.log(pedidoId)
-  console.log(nuevaImagen)
+
   try {
     // Verificar si se proporcionó un archivo en la solicitud
     if (!req.file) {
-      throw new Error('No se proporcionó ningún archivo');
+      return res.status(400).json({ message: 'No se proporcionó ningún archivo' });
     }
+
+    const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
+    console.log(pedidoId);
+    console.log(nuevaImagen);
 
     // Subir el archivo a Cloudinary
     const result = await cloudinary.uploader.upload(nuevaImagen, {
