@@ -3,7 +3,7 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
-const webpush = require('web-push');
+const PushSubscription = require('../models/pushSubscription');  // Asegúrate de importar el modelo PushSubscription si lo necesitas
 
 // Configurar el transporte de correo electrónico
 const transporter = nodemailer.createTransport({
@@ -11,22 +11,10 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: process.env.USER, // Coloca aquí tu correo electrónico
-    pass: process.env.PASSMAIL // Coloca aquí tu contraseña de correo electrónico
+    user: process.env.USER,
+    pass: process.env.PASSMAIL
   }
 });
-
-// Configurar las claves VAPID para notificaciones push
-const vapidKeys = {
-  publicKey: "BFYtOg9-LQWHmObZKXm4VIV2BImn5nBrhz4h37GQpbdj0hSBcghJG7h-wldz-fx9aTt7oaqKSS3KXhA4nXf32pY",
-  privateKey: "daiRV8XPPoeSHC4nZ5Hj6yHr98saYGlysFAuEJPypa0"
-};
-
-webpush.setVapidDetails(
-  'mailto:austins0271142@gmail.com',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
 
 exports.activarCuenta = async (req, res, next) => {
   const { token, password } = req.body;
@@ -57,9 +45,6 @@ exports.activarCuenta = async (req, res, next) => {
 
     await user.save();
 
-    // Enviar notificación push
-    await enviarNotificacionPush(user, password);
-
     // Enviar correo electrónico
     await enviarCorreoElectronico(user, password);
 
@@ -83,23 +68,6 @@ exports.activarCuenta = async (req, res, next) => {
     res.status(400).json({ error: errorMessage });
   }
 };
-
-async function enviarNotificacionPush(user, password) {
-  // Configurar el payload de la notificación push
-  const notificationPayload = JSON.stringify({
-    title: '¡Cuenta Activada!',
-    body: `¡Hola ${user.username}! Tu cuenta ha sido activada correctamente. Puedes acceder al sitio con la siguiente contraseña: ${password}`
-    // Puedes agregar más datos según lo requiera tu aplicación
-  });
-
-  try {
-    await webpush.sendNotification(user.pushSubscription, notificationPayload);
-    console.log('Notificación push enviada con éxito.');
-  } catch (error) {
-    console.error('Error al enviar notificación push:', error);
-    throw new Error('Error al enviar notificación push.');
-  }
-}
 
 async function enviarCorreoElectronico(user, password) {
   // Configurar el mensaje de correo electrónico con HTML y emojis
