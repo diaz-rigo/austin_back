@@ -98,31 +98,31 @@ exports.crearPedido = async (req, res, next) => {
   const datosPedido = req.body;
   const files = req.files; // Obtener los archivos cargados si se utiliza el middleware adecuado en Express
   console.log(datosPedido)
-  
+
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
-      // const fileName = path.parse(req.file.originalname).name;
-      // const result = await cloudinary.uploader.upload(req.file.path, {
-      //   folder: `${category}/${_id}`,
-      //   public_id: fileName // Usar el nombre de archivo sin la extensión
-      // });
+    // const fileName = path.parse(req.file.originalname).name;
+    // const result = await cloudinary.uploader.upload(req.file.path, {
+    //   folder: `${category}/${_id}`,
+    //   public_id: fileName // Usar el nombre de archivo sin la extensión
+    // });
     // Si el usuario ya existe, enviar mensaje de activación de cuenta
     if (existingUser) {
-    
+
       const token = jwt.sign(
         { userId: existingUser._id },
         process.env.JWT_KEY,
         { expiresIn: '24h' } // El token expira en 24 horas
       );
-  
-  // Enviar correo de activación
-const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
-const mailOptionsActivacion = {
-  from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-  to: datosPedido.correo,
-  subject: 'Activa tu cuenta en Pastelería Austin\'s',
-  html: `
+
+      // Enviar correo de activación
+      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
+      const mailOptionsActivacion = {
+        from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+        to: datosPedido.correo,
+        subject: 'Activa tu cuenta en Pastelería Austin\'s',
+        html: `
     <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
       <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
       <p style="font-size: 16px;">¡Hola ${datosPedido.nombre}!</p>
@@ -132,9 +132,9 @@ const mailOptionsActivacion = {
       <p style="font-size: 24px; text-align: center;">🍰🎉🎂</p>
     </div>
   `,
-};
+      };
 
-       enviarCorreo(mailOptionsActivacion);
+      enviarCorreo(mailOptionsActivacion);
       return res.status(409).json({
         message: ERROR_USER_ALREADY_EXISTS,
       });
@@ -155,7 +155,7 @@ const mailOptionsActivacion = {
     });
 
     // Guardar el nuevo usuario en la base de datos
-    await nuevoUsuario.save();
+    
 
     // Generar un código de pedido único
     const codigoPedido = generarCodigoPedido();
@@ -168,12 +168,14 @@ const mailOptionsActivacion = {
       codigoPedido: codigoPedido,
     });
 
-    
-     // Calcular el precio total del pedido
-     const precioPorKilo = datosPedido.sabor.precioPorKilo || 0; // Obtener el precio por kilo del sabor
-     const cantidad = datosPedido.cantidad || 0;
-     const precioTotal = precioPorKilo * cantidad;
-       //const result = await cloudinary.uploader.upload(req.file.path);
+
+    // Calcular el precio total del pedido
+    const precioPorKilo = datosPedido.sabor?.precioPorKilo || 0; // Obtener el precio por kilo del sabor, si está disponible
+
+
+    const cantidad = datosPedido.cantidad || 400;
+    const precioTotal = precioPorKilo * cantidad;
+    //const result = await cloudinary.uploader.upload(req.file.path);
     // Verificar y asignar los campos del detalle del pedido según los datos recibidos
 
     const detallePedidoData = {
@@ -185,7 +187,7 @@ const mailOptionsActivacion = {
       hora: datosPedido.hora || '',
       modo: datosPedido.modo || '',
       modoPersonalizado: datosPedido.modoPersonalizado || '',
-      sabor: datosPedido.sabor ? datosPedido.sabor.name : '',
+      sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
       precioTotal: precioTotal,
       color: datosPedido.color_personalizado,
@@ -201,7 +203,7 @@ const mailOptionsActivacion = {
 
     // Guardar el pedido en la base de datos
     await pedido.save();
-
+    await nuevoUsuario.save();
     // Enviar notificación por correo y mensaje de notificación si es la primera vez del usuario
     if (!existingUser) {
       const mailOptionsSeguimiento = {
@@ -230,7 +232,7 @@ const mailOptionsActivacion = {
           </div>
         `,
       };
-      
+
 
 
       // Envío de correo electrónico
@@ -260,7 +262,7 @@ const mailOptionsActivacion = {
             silent: false // No silenciar
           }
         };
-        
+
 
 
         try {

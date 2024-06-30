@@ -10,6 +10,9 @@ const Pedido = require('../models/order');
 const PedidoDetalle = require('../models/orderDetail');
 const VentaDetail = require("../models/ventaDetail");
 const Venta = require("../models/ventaSchema");
+const path = require('path');
+const fs = require('fs');
+const cloudinary = require('../utils/cloudinary'); // Importa la configuración de Cloudinary
 
 // Configurar variables de entorno
 dotenv.config();
@@ -92,37 +95,22 @@ const enviarNotificacionPush = async (subscription, payload) => {
 // Controladores
 exports.crearPedido = async (req, res, next) => {
   const datosPedido = req.body;
+  const files = req.files; // Obtener los archivos cargados si se utiliza el middleware adecuado en Express
   console.log(datosPedido)
+  
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
-
+      // const fileName = path.parse(req.file.originalname).name;
+      // const result = await cloudinary.uploader.upload(req.file.path, {
+      //   folder: `${category}/${_id}`,
+      //   public_id: fileName // Usar el nombre de archivo sin la extensión
+      // });
     // Si el usuario ya existe, enviar mensaje de activación de cuenta
     if (existingUser) {
       return res.status(409).json({
         message: ERROR_USER_ALREADY_EXISTS,
       });
-      const token = jwt.sign(
-        { userId: nuevoUsuario._id },
-        process.env.JWT_ACCOUNT_ACTIVATION,
-        { expiresIn: '24h' } // El token expira en 24 horas
-      );
-  
-      // Enviar correo de activación
-      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
-      const mailOptionsActivacion = {
-        from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-        to: datosPedido.correo,
-        subject: 'Activa tu cuenta en Pastelería Austin\'s',
-        html: `
-          <p>¡Hola ${datosPedido.nombre}!</p>
-          <p>Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
-          <p><a href="${activationLink}">${activationLink}</a></p>
-          <p>Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
-        `,
-      };
-      await enviarCorreo(mailOptionsActivacion);
-  
     }
 
     // Crear un nuevo objeto de usuario
@@ -153,7 +141,13 @@ exports.crearPedido = async (req, res, next) => {
     });
 
     
+     // Calcular el precio total del pedido
+     const precioPorKilo = datosPedido.sabor.precioPorKilo || 0; // Obtener el precio por kilo del sabor
+     const cantidad = datosPedido.cantidad || 0;
+     const precioTotal = precioPorKilo * cantidad;
+       //const result = await cloudinary.uploader.upload(req.file.path);
     // Verificar y asignar los campos del detalle del pedido según los datos recibidos
+
     const detallePedidoData = {
       _id: new mongoose.Types.ObjectId(),
       pedido: pedido._id,
@@ -165,7 +159,9 @@ exports.crearPedido = async (req, res, next) => {
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       sabor: datosPedido.sabor ? datosPedido.sabor.name : '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
-      precioTotal: datosPedido.precioTotal || 0,
+      precioTotal: precioTotal,
+      color: datosPedido.color_personalizado,
+
     };
 
     // Guardar el detalle del pedido en la base de datos
@@ -401,5 +397,42 @@ exports.updateStatusOrder = async (req, res, next) => {
   } catch (error) {
     console.error('Error al actualizar el estado del detalle de compra:', error);
     res.status(500).json({ message: ERROR_INTERNAL_SERVER });
+  }
+};
+
+exports.actualizarImagenPedido = async (req, res) => {
+  const path = require('path')
+  const pedidoId = req.params.id; // Obtener el ID del pedido de los parámetros de la solicitud
+  const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
+  console.log(pedidoId)
+  console.log(nuevaImagen)
+  try {
+    // Verificar si se proporcionó un archivo en la solicitud
+    if (!req.file) {
+      throw new Error('No se proporcionó ningún archivo');
+    }
+
+    // Subir el archivo a Cloudinary
+    const result = await cloudinary.uploader.upload(nuevaImagen, {
+      folder: `design`,
+      use_filename: true // Usar el nombre de archivo original sin la extensión
+    });
+
+    // Actualizar la imagen del pedido en la base de datos
+    const pedidoActualizado = await PedidoDetalle.findByIdAndUpdate(
+      pedidoId,
+      { imagen: result.secure_url }, // Guardar la URL segura de la imagen en la base de datos
+      { new: true }
+    );
+
+    if (!pedidoActualizado) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    // Devolver el pedido actualizado como respuesta
+    res.status(200).json({ message: 'Imagen del pedido actualizada correctamente', pedido: pedidoActualizado });
+  } catch (error) {
+    console.error('Error al actualizar imagen del pedido:', error);
+    return res.status(500).json({ message: 'Error al actualizar imagen del pedido' });
   }
 };
