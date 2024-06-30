@@ -28,6 +28,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+
 // Configurar las claves VAPID
 const vapidKeys = {
   publicKey: "BFYtOg9-LQWHmObZKXm4VIV2BImn5nBrhz4h37GQpbdj0hSBcghJG7h-wldz-fx9aTt7oaqKSS3KXhA4nXf32pY",
@@ -108,30 +109,35 @@ exports.crearPedido = async (req, res, next) => {
       // });
     // Si el usuario ya existe, enviar mensaje de activación de cuenta
     if (existingUser) {
-      return res.status(409).json({
-        message: ERROR_USER_ALREADY_EXISTS,
-      });
+    
       const token = jwt.sign(
-        { userId: nuevoUsuario._id },
+        { userId: existingUser._id },
         process.env.JWT_KEY,
         { expiresIn: '24h' } // El token expira en 24 horas
       );
   
-      // Enviar correo de activación
-      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
-      const mailOptionsActivacion = {
-        from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-        to: datosPedido.correo,
-        subject: 'Activa tu cuenta en Pastelería Austin\'s',
-        html: `
-          <p>¡Hola ${datosPedido.nombre}!</p>
-          <p>Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
-          <p><a href="${activationLink}">${activationLink}</a></p>
-          <p>Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
-        `,
-      };
-      await enviarCorreo(mailOptionsActivacion);
-  
+  // Enviar correo de activación
+const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
+const mailOptionsActivacion = {
+  from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+  to: datosPedido.correo,
+  subject: 'Activa tu cuenta en Pastelería Austin\'s',
+  html: `
+    <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
+      <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
+      <p style="font-size: 16px;">¡Hola ${datosPedido.nombre}!</p>
+      <p style="font-size: 16px;">Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
+      <p style="font-size: 18px; text-align: center;"><a href="${activationLink}" style="color: #d17a3b; text-decoration: none;">Activar mi cuenta</a></p>
+      <p style="font-size: 16px;">Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
+      <p style="font-size: 24px; text-align: center;">🍰🎉🎂</p>
+    </div>
+  `,
+};
+
+       enviarCorreo(mailOptionsActivacion);
+      return res.status(409).json({
+        message: ERROR_USER_ALREADY_EXISTS,
+      });
     }
 
 
@@ -210,20 +216,21 @@ exports.crearPedido = async (req, res, next) => {
               </div>
               <div style="text-align: center; padding: 20px;">
                 <p style="color: #555; font-size: 16px;">¡Gracias por confiar en Pastelería Austin's para tus deliciosos postres! Tu pedido ha sido solicitado con éxito y pronto nos comunicaremos.</p>
-                <p style="font-weight: bold; font-size: 16px;">CODIGO PEDIDO: ${codigoPedido}</p>
+                <p style="font-weight: bold; font-size: 16px;">CODIGO PEDIDO: ${codigoPedido} 🎂</p>
                 <p style="color: #555; font-size: 16px;">Sigue estos pasos para consultar el estado de tu pedido:</p>
                 <ol style="color: #555; font-size: 16px;">
-                  <li>Ingresa a nuestro <a href="https://austins.vercel.app">sitio web</a>.</li>
+                  <li>Ingresa a nuestro <a href="https://austins.vercel.app">sitio web 🌐</a>.</li>
                   <li>Dirígete a la sección de "Seguimiento de Pedidos" o "Mis Pedidos".</li>
                   <li>Ingresa el número de pedido proporcionado arriba.</li>
                   <li>Consulta el estado actualizado de tu pedido.</li>
                 </ol>
               </div>
-              <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu pedido! Si necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
+              <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu pedido! Si necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte. 🍰🎉</p>
             </div>
           </div>
         `,
       };
+      
 
 
       // Envío de correo electrónico
@@ -236,8 +243,8 @@ exports.crearPedido = async (req, res, next) => {
 
         const payload = {
           notification: {
-            title: 'Seguimiento de tu Pedido',
-            body: `Tu pedido ha sido solicitado. Sigue el estado de tu pedido con el código: ${codigoPedido}`,
+            title: 'Seguimiento de tu Pedido 🍰',
+            body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
             icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
             vibrate: [200, 100, 200],
             sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
@@ -248,12 +255,12 @@ exports.crearPedido = async (req, res, next) => {
             actions: [
               { action: "ver_pedido", title: "Ver Pedido" },
             ],
-            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // unit is seconds. if both expiry and timeToLive are given, expiry will take precedence
-            timeToLive: 28 * 86400,
-            silent: false, // gcm, apn, will override badge, sound, alert and priority if set to true on iOS, will omit `notification` property and send as data-only on Android/GCM
-
+            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
+            timeToLive: 28 * 86400, // Tiempo de vida en segundos
+            silent: false // No silenciar
           }
         };
+        
 
 
         try {
