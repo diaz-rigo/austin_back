@@ -34,12 +34,12 @@ exports.sendActivationEmail = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Verificar si el usuario ya tiene una contraseña establecida
-    if (existingUser.password !== DEFAULT_PASSWORD) {
-      return res.status(400).json({
-        message: 'El usuario ya tiene una contraseña establecida. Si ha olvidado su contraseña, por favor recupérala.'
-      });
-    }
+    // // Verificar si el usuario ya tiene una contraseña establecida
+    // if (existingUser.password !== DEFAULT_PASSWORD) {
+    //   return res.status(400).json({
+    //     message: 'El usuario ya tiene una contraseña establecida. Si ha olvidado su contraseña, por favor recupérala.'
+    //   });
+    // }
     if (existingUser.password !== DEFAULT_PASSWORD2) {
       return res.status(400).json({
         message: 'El usuario ya tiene una contraseña establecida. Si ha olvidado su contraseña, por favor recupérala.'
