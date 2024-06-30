@@ -102,20 +102,22 @@ exports.crearPedido = async (req, res, next) => {
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
-    // const fileName = path.parse(req.file.originalname).name;
-    // const result = await cloudinary.uploader.upload(req.file.path, {
-    //   folder: `${category}/${_id}`,
-    //   public_id: fileName // Usar el nombre de archivo sin la extensión
-    // });
+
     // Si el usuario ya existe, enviar mensaje de activación de cuenta
     if (existingUser) {
-
+      // Verificar si el usuario ya está activo
+      if (existingUser.status === 'ACTIVE') {
+        return res.status(200).json({
+          message: 'El usuario ya tiene una cuenta activa. Por favor, inicie sesión.',
+        });
+      }
+    
       const token = jwt.sign(
         { userId: existingUser._id },
         process.env.JWT_KEY,
         { expiresIn: '24h' } // El token expira en 24 horas
       );
-
+    
       // Enviar correo de activación
       const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
       const mailOptionsActivacion = {
@@ -123,22 +125,23 @@ exports.crearPedido = async (req, res, next) => {
         to: datosPedido.correo,
         subject: 'Activa tu cuenta en Pastelería Austin\'s',
         html: `
-    <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
-      <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
-      <p style="font-size: 16px;">¡Hola ${datosPedido.nombre}!</p>
-      <p style="font-size: 16px;">Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
-      <p style="font-size: 18px; text-align: center;"><a href="${activationLink}" style="color: #d17a3b; text-decoration: none;">Activar mi cuenta</a></p>
-      <p style="font-size: 16px;">Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
-      <p style="font-size: 24px; text-align: center;">🍰🎉🎂</p>
-    </div>
-  `,
+          <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
+            <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
+            <p style="font-size: 16px;">¡Hola ${datosPedido.nombre}!</p>
+            <p style="font-size: 16px;">Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
+            <p style="font-size: 18px; text-align: center;"><a href="${activationLink}" style="color: #d17a3b; text-decoration: none;">Activar mi cuenta</a></p>
+            <p style="font-size: 16px;">Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
+            <p style="font-size: 24px; text-align: center;">🍰🎉🎂</p>
+          </div>
+        `,
       };
-
+    
       enviarCorreo(mailOptionsActivacion);
       return res.status(409).json({
         message: ERROR_USER_ALREADY_EXISTS,
       });
     }
+    
 
 
     // Crear un nuevo objeto de usuario
@@ -155,7 +158,7 @@ exports.crearPedido = async (req, res, next) => {
     });
 
     // Guardar el nuevo usuario en la base de datos
-    
+
 
     // Generar un código de pedido único
     const codigoPedido = generarCodigoPedido();
@@ -185,7 +188,7 @@ exports.crearPedido = async (req, res, next) => {
       cantidad: datosPedido.cantidad || 0,
       dia: datosPedido.dia ? new Date(datosPedido.dia) : new Date(), // Si no se proporciona la fecha, usar la fecha actual
       hora: datosPedido.hora || '',
-      modo: datosPedido.modo?  datosPedido.modo : datosPedido.modoPersonalizado || '',
+      modo: datosPedido.modo ? datosPedido.modo : datosPedido.modoPersonalizado || '',
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
@@ -340,16 +343,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     // Envío de notificación push
     await enviarNotificacionPush(subscription, payload);
 
-    // const mailOptionsSeguimiento = {
-    //   from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-    //   to: userEmail,
-    //   subject: 'Seguimiento de tu Pedido - Pastelería Austin\'s',
-    //   html: `
-    //     <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
-    //       <!-- Código HTML del correo -->
-    //     </div>
-    //   `,
-    // };
+
     const mailOptionsSeguimiento = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: userEmail,
