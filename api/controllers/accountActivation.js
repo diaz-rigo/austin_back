@@ -21,6 +21,7 @@ const transporter = nodemailer.createTransport({
 
 
 const DEFAULT_PASSWORD = 'contraseña123';
+const DEFAULT_PASSWORD2 = 'contraseñaPorDefecto';
 
 
 exports.sendActivationEmail = async (req, res) => {
@@ -35,6 +36,11 @@ exports.sendActivationEmail = async (req, res) => {
 
     // Verificar si el usuario ya tiene una contraseña establecida
     if (existingUser.password !== DEFAULT_PASSWORD) {
+      return res.status(400).json({
+        message: 'El usuario ya tiene una contraseña establecida. Si ha olvidado su contraseña, por favor recupérala.'
+      });
+    }
+    if (existingUser.password !== DEFAULT_PASSWORD2) {
       return res.status(400).json({
         message: 'El usuario ya tiene una contraseña establecida. Si ha olvidado su contraseña, por favor recupérala.'
       });
