@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/editProfile");
+const userController = require("../controllers/editprofile");
 const multer = require('multer');
 
 // Configuración de almacenamiento de multer
