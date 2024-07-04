@@ -2,7 +2,7 @@ const mercadopago = require("mercadopago");
 
 exports.createOrder = async (req, res) => {
   mercadopago.configure({
-    access_token: 'TEST-3330887840036989-031517-1525a7d106e6695f0210eb568cf7d397-1730195078',
+    access_token: 'TEST-518106340235064-031422-196c307212fb5dbd9be0bdf49a7531f2-1610223638',
   });
   try {
     const { totalneto, tipoEntrega, dateselect, productos, datoscliente, instrucion } = req.body;

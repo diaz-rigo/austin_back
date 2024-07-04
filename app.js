@@ -17,6 +17,7 @@ const paymentRoutes = require('./api/routes/payment');
 const paymentStripeRoutes = require('./api/routes/paymentStripe');
 const paymentMercadoRoutes = require('./api/routes/paymentMercado');
 const orderRoutes = require('./api/routes/order');
+const perfil = require('./api/routes/edit_profile');
 const tareasController = require('./api/controllers/tareas');
 const ADMINREPORT = require('./api/routes/adminReport');
 const PUBLICREPORT = require('./api/routes/publicReport');
@@ -61,6 +62,7 @@ app.use('/payment', paymentRoutes);
 app.use('/stripe', paymentStripeRoutes);
 app.use('/mercado', paymentMercadoRoutes);
 app.use('/order', orderRoutes);
+app.use('/perfil', perfil);
 app.use('/admin', ADMINREPORT);
 app.use('/publicR', PUBLICREPORT);
 // Llamada a la función que contiene la lógica de las tareas
