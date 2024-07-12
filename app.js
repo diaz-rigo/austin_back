@@ -21,6 +21,7 @@ const perfil = require('./api/routes/edit_profile');
 const tareasController = require('./api/controllers/tareas');
 const ADMINREPORT = require('./api/routes/adminReport');
 const PUBLICREPORT = require('./api/routes/publicReport');
+const alexa = require('./api/routes/alexa');
 
 const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/'
     mongoose.connect(url, {
@@ -65,6 +66,7 @@ app.use('/order', orderRoutes);
 app.use('/perfil', perfil);
 app.use('/admin', ADMINREPORT);
 app.use('/publicR', PUBLICREPORT);
+app.use('/alexa', alexa);
 // Llamada a la función que contiene la lógica de las tareas
 
 

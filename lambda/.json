@@ -1,0 +1,88 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "autins huejutla",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "WelcomeIntent",
+                    "slots": [],
+                    "samples": [
+                        "Hola",
+                        "Buenos días",
+                        "Buenas tardes",
+                        "Buenas noches",
+                        "Hola Alexa"
+                    ]
+                },
+                {
+                    "name": "LoginIntent",
+                    "slots": [
+                        {
+                            "name": "name",
+                            "type": "AMAZON.Person"
+                        },
+                        {
+                            "name": "phone",
+                            "type": "AMAZON.PhoneNumber"
+                        }
+                    ],
+                    "samples": [
+                        "Inicia sesión con el nombre {name} y el teléfono {phone}",
+                        "Mi nombre es {name} y mi teléfono es {phone}",
+                        "Quiero iniciar sesión con el nombre {name} y el teléfono {phone}",
+                        "Login con el nombre {name} y el teléfono {phone}"
+                    ]
+                },
+                {
+                    "name": "ListProductsIntent",
+                    "slots": [],
+                    "samples": [
+                        "Muestra los productos",
+                        "Lista los productos",
+                        "Qué productos tienen",
+                        "Quiero ver los productos"
+                    ]
+                },
+                {
+                    "name": "SelectProductIntent",
+                    "slots": [
+                        {
+                            "name": "product",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "Quiero {product}",
+                        "Selecciona el producto {product}",
+                        "Elijo {product}",
+                        "Dame {product}"
+                    ]
+                },
+                {
+                    "name": "ConfirmPurchaseIntent",
+                    "slots": [],
+                    "samples": [
+                        "Confirmar compra",
+                        "Comprar producto",
+                        "Completar pedido",
+                        "Quiero comprar",
+                        "Confirmar pedido"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}
