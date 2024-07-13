@@ -1,4 +1,5 @@
 const Alexa = require('ask-sdk-core');
+const axios = require('axios');
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -18,18 +19,30 @@ const LoginIntentHandler = {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'LoginIntent';
     },
-    handle(handlerInput) {
+    async handle(handlerInput) {
         const { name, phone } = handlerInput.requestEnvelope.request.intent.slots;
         const userName = name.value;
         const userPhone = phone.value;
 
-        if (userName && userPhone) {
-            const speakOutput = `He registrado tu nombre como ${userName} y tu número de teléfono como ${userPhone}. Has iniciado sesión exitosamente. ¿Cómo puedo asistirte hoy?`;
-            return handlerInput.responseBuilder
-                .speak(speakOutput)
-                .reprompt(speakOutput)
-                .getResponse();
-        } else {
+        try {
+            const response = await axios.post('https://austin-b.onrender.com/alexa/sign-in', {
+                name: userName,
+                phone: userPhone
+            });
+
+            const userData = response.data.user;
+
+            if (userData) {
+                const speakOutput = `He registrado tu nombre como ${userData.name}  ${userData.maternalLastname} y tu número de teléfono como ${userData.phone}. Has iniciado sesión exitosamente. ¿Cómo puedo asistirte hoy?`;
+                return handlerInput.responseBuilder
+                    .speak(speakOutput)
+                    .reprompt(speakOutput)
+                    .getResponse();
+            } else {
+                throw new Error('No se pudo obtener la información del usuario.');
+            }
+        } catch (error) {
+            console.error(`Error al iniciar sesión: ${error.message}`);
             const speakOutput = 'No pude registrar tu información. Por favor, proporciona tu nombre y número de teléfono nuevamente.';
             return handlerInput.responseBuilder
                 .speak(speakOutput)
@@ -58,8 +71,23 @@ const ListProductsIntentHandler = {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ListProductsIntent';
     },
-    handle(handlerInput) {
-        const speakOutput = 'Estos son los productos disponibles: Producto A, Producto B, Producto C. ¿Cuál te interesa?';
+    async handle(handlerInput) {
+        let speakOutput = 'Lo siento, no pude obtener la lista de productos en este momento. Por favor intenta nuevamente más tarde.';
+
+        try {
+            const response = await axios.get('https://austin-b.onrender.com/product');
+            const products = response.data; // Asumiendo que la respuesta de la API es un array de productos
+
+            if (products.length > 0) {
+                const productNames = products.map(product => product.name).join(', ');
+                speakOutput = `Estos son los productos disponibles: ${productNames}. ¿Cuál te interesa?`;
+            } else {
+                speakOutput = 'No hay productos disponibles en este momento.';
+            }
+        } catch (error) {
+            console.log(`Error al obtener productos: ${error}`);
+        }
+
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .reprompt('¿Cuál producto te interesa?')

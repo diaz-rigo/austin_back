@@ -13,7 +13,7 @@ const Venta = require("../models/ventaSchema");
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('../utils/cloudinary'); // Importa la configuración de Cloudinary
-
+const jwt = require('jsonwebtoken');
 // Configurar variables de entorno
 dotenv.config();
 
@@ -27,6 +27,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASSMAIL,
   },
 });
+
 
 // Configurar las claves VAPID
 const vapidKeys = {
@@ -48,6 +49,7 @@ webpush.setVapidDetails(
 
 // Mensajes de error
 const ERROR_USER_ALREADY_EXISTS = "El correo ya está registrado. Por favor, active su cuenta para hacer el pedido.";
+const ERROR_USER_ALREADY_EXISTS_ACTIVATE = "Este correo ya está registrado y activado. Por favor, inicie sesión para hacer su pedido.";
 const ERROR_ORDER_NOT_FOUND = "Pedido no encontrado";
 const ERROR_ORDER_DETAIL_NOT_FOUND = "Detalle de compra no encontrado";
 const ERROR_INVALID_SUBSCRIPTION = "La suscripción no es válida.";
@@ -97,21 +99,51 @@ exports.crearPedido = async (req, res, next) => {
   const datosPedido = req.body;
   const files = req.files; // Obtener los archivos cargados si se utiliza el middleware adecuado en Express
   console.log(datosPedido)
-  
+
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
-      // const fileName = path.parse(req.file.originalname).name;
-      // const result = await cloudinary.uploader.upload(req.file.path, {
-      //   folder: `${category}/${_id}`,
-      //   public_id: fileName // Usar el nombre de archivo sin la extensión
-      // });
+
     // Si el usuario ya existe, enviar mensaje de activación de cuenta
     if (existingUser) {
+      // Verificar si el usuario ya está activo
+      if (existingUser.status === 'ACTIVE') {
+        return res.status(409).json({
+          message: ERROR_USER_ALREADY_EXISTS_ACTIVATE,
+        });
+      }
+    
+      const token = jwt.sign(
+        { userId: existingUser._id },
+        process.env.JWT_KEY,
+        { expiresIn: '24h' } // El token expira en 24 horas
+      );
+    
+      // Enviar correo de activación
+      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
+      const mailOptionsActivacion = {
+        from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+        to: datosPedido.correo,
+        subject: 'Activa tu cuenta en Pastelería Austin\'s',
+        html: `
+          <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
+            <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
+            <p style="font-size: 16px;">¡Hola ${datosPedido.nombre}!</p>
+            <p style="font-size: 16px;">Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
+            <p style="font-size: 18px; text-align: center;"><a href="${activationLink}" style="color: #d17a3b; text-decoration: none;">Activar mi cuenta</a></p>
+            <p style="font-size: 16px;">Una vez activada tu cuenta, podrás ingresar con tu contraseña.</p>
+            <p style="font-size: 24px; text-align: center;">🍰🎉🎂</p>
+          </div>
+        `,
+      };
+    
+      enviarCorreo(mailOptionsActivacion);
       return res.status(409).json({
         message: ERROR_USER_ALREADY_EXISTS,
       });
     }
+    
+
 
     // Crear un nuevo objeto de usuario
     const nuevoUsuario = new User({
@@ -127,7 +159,7 @@ exports.crearPedido = async (req, res, next) => {
     });
 
     // Guardar el nuevo usuario en la base de datos
-    await nuevoUsuario.save();
+
 
     // Generar un código de pedido único
     const codigoPedido = generarCodigoPedido();
@@ -140,12 +172,14 @@ exports.crearPedido = async (req, res, next) => {
       codigoPedido: codigoPedido,
     });
 
-    
-     // Calcular el precio total del pedido
-     const precioPorKilo = datosPedido.sabor.precioPorKilo || 0; // Obtener el precio por kilo del sabor
-     const cantidad = datosPedido.cantidad || 0;
-     const precioTotal = precioPorKilo * cantidad;
-       //const result = await cloudinary.uploader.upload(req.file.path);
+
+    // Calcular el precio total del pedido
+    const precioPorKilo = datosPedido.sabor?.precioPorKilo || 400; // Obtener el precio por kilo del sabor, si está disponible
+
+
+    const cantidad = datosPedido.cantidad || 0;
+    const precioTotal = precioPorKilo * cantidad;
+    //const result = await cloudinary.uploader.upload(req.file.path);
     // Verificar y asignar los campos del detalle del pedido según los datos recibidos
 
     const detallePedidoData = {
@@ -155,9 +189,10 @@ exports.crearPedido = async (req, res, next) => {
       cantidad: datosPedido.cantidad || 0,
       dia: datosPedido.dia ? new Date(datosPedido.dia) : new Date(), // Si no se proporciona la fecha, usar la fecha actual
       hora: datosPedido.hora || '',
-      modo: datosPedido.modo || '',
+      modo: datosPedido.modo ? datosPedido.modo : datosPedido.modoPersonalizado || '',
       modoPersonalizado: datosPedido.modoPersonalizado || '',
-      sabor: datosPedido.sabor ? datosPedido.sabor.name : '',
+      modoPersonalizado: datosPedido.modoPersonalizado || '',
+      sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
       precioTotal: precioTotal,
       color: datosPedido.color_personalizado,
@@ -173,7 +208,7 @@ exports.crearPedido = async (req, res, next) => {
 
     // Guardar el pedido en la base de datos
     await pedido.save();
-
+    await nuevoUsuario.save();
     // Enviar notificación por correo y mensaje de notificación si es la primera vez del usuario
     if (!existingUser) {
       const mailOptionsSeguimiento = {
@@ -188,20 +223,21 @@ exports.crearPedido = async (req, res, next) => {
               </div>
               <div style="text-align: center; padding: 20px;">
                 <p style="color: #555; font-size: 16px;">¡Gracias por confiar en Pastelería Austin's para tus deliciosos postres! Tu pedido ha sido solicitado con éxito y pronto nos comunicaremos.</p>
-                <p style="font-weight: bold; font-size: 16px;">CODIGO PEDIDO: ${codigoPedido}</p>
+                <p style="font-weight: bold; font-size: 16px;">CODIGO PEDIDO: ${codigoPedido} 🎂</p>
                 <p style="color: #555; font-size: 16px;">Sigue estos pasos para consultar el estado de tu pedido:</p>
                 <ol style="color: #555; font-size: 16px;">
-                  <li>Ingresa a nuestro <a href="https://austins.vercel.app">sitio web</a>.</li>
+                  <li>Ingresa a nuestro <a href="https://austins.vercel.app">sitio web 🌐</a>.</li>
                   <li>Dirígete a la sección de "Seguimiento de Pedidos" o "Mis Pedidos".</li>
                   <li>Ingresa el número de pedido proporcionado arriba.</li>
                   <li>Consulta el estado actualizado de tu pedido.</li>
                 </ol>
               </div>
-              <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu pedido! Si necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
+              <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu pedido! Si necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte. 🍰🎉</p>
             </div>
           </div>
         `,
       };
+
 
 
       // Envío de correo electrónico
@@ -214,8 +250,8 @@ exports.crearPedido = async (req, res, next) => {
 
         const payload = {
           notification: {
-            title: 'Seguimiento de tu Pedido',
-            body: `Tu pedido ha sido solicitado. Sigue el estado de tu pedido con el código: ${codigoPedido}`,
+            title: 'Seguimiento de tu Pedido 🍰',
+            body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
             icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
             vibrate: [200, 100, 200],
             sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
@@ -226,12 +262,12 @@ exports.crearPedido = async (req, res, next) => {
             actions: [
               { action: "ver_pedido", title: "Ver Pedido" },
             ],
-            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // unit is seconds. if both expiry and timeToLive are given, expiry will take precedence
-            timeToLive: 28 * 86400,
-            silent: false, // gcm, apn, will override badge, sound, alert and priority if set to true on iOS, will omit `notification` property and send as data-only on Android/GCM
-
+            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
+            timeToLive: 28 * 86400, // Tiempo de vida en segundos
+            silent: false // No silenciar
           }
         };
+
 
 
         try {
@@ -308,16 +344,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     // Envío de notificación push
     await enviarNotificacionPush(subscription, payload);
 
-    // const mailOptionsSeguimiento = {
-    //   from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
-    //   to: userEmail,
-    //   subject: 'Seguimiento de tu Pedido - Pastelería Austin\'s',
-    //   html: `
-    //     <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
-    //       <!-- Código HTML del correo -->
-    //     </div>
-    //   `,
-    // };
+
     const mailOptionsSeguimiento = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: userEmail,
@@ -401,16 +428,18 @@ exports.updateStatusOrder = async (req, res, next) => {
 };
 
 exports.actualizarImagenPedido = async (req, res) => {
-  const path = require('path')
+  const path = require('path');
   const pedidoId = req.params.id; // Obtener el ID del pedido de los parámetros de la solicitud
-  const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
-  console.log(pedidoId)
-  console.log(nuevaImagen)
+
   try {
     // Verificar si se proporcionó un archivo en la solicitud
     if (!req.file) {
-      throw new Error('No se proporcionó ningún archivo');
+      return res.status(400).json({ message: 'No se proporcionó ningún archivo' });
     }
+
+    const nuevaImagen = req.file.path; // Obtener la ruta de la nueva imagen del cuerpo de la solicitud
+    console.log(pedidoId);
+    console.log(nuevaImagen);
 
     // Subir el archivo a Cloudinary
     const result = await cloudinary.uploader.upload(nuevaImagen, {
