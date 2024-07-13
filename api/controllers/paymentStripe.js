@@ -5,7 +5,18 @@ const stripe = new Stripe('sk_test_51OtF7S01rw9U6daMzSt8PEsZeIxIMQlA0V3rxqLNYCAo
 const VentaDetail = require("../models/ventaDetail");
 const Venta = require("../models/ventaSchema");
 const User = require("../models/user");
+const generarCodigoPedido = () => {
+  const longitud = 6;
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let codigoPedido = '';
 
+  for (let i = 0; i < longitud; i++) {
+    const caracterAleatorio = caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+    codigoPedido += caracterAleatorio;
+  }
+
+  return codigoPedido;
+};
 exports.createSession = async (req, res) => {
   try {
     const { totalneto, tipoEntrega, dateselect, productos, datoscliente, instruction, success_url, cancel_url } = req.body;
@@ -94,6 +105,7 @@ exports.createSession = async (req, res) => {
       details: ventaDetail._id,
       totalAmount: totalneto,
       stripeSessionID: session.id,
+      trackingNumber:generarCodigoPedido()
     });
     await venta.save();
 
