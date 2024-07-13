@@ -304,7 +304,7 @@ exports.updateStatusOrder = async (req, res, next) => {
     let venta = await Venta.findOne({ paypalOrderID: paypalOrderId });
 
     if (!venta) {
-      venta = await Venta.findOne({ stripeSessionID: stripeSessionID });
+      venta = await Venta.findOne({ stripeSessionID: paypalOrderId });
       if (!venta) {
         return res.status(404).json({ message: 'Order not found' });
       }
