@@ -300,7 +300,7 @@ exports.crearPedido = async (req, res, next) => {
 exports.updateStatusOrder = async (req, res, next) => {
   try {
     const { subscription, paypalOrderId, stripeSessionID } = req.body;
-
+    console.log("---->" ,subscription, paypalOrderId, stripeSessionID)
     let venta = await Venta.findOne({ paypalOrderID: paypalOrderId });
 
     if (!venta) {
