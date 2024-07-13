@@ -299,11 +299,12 @@ exports.crearPedido = async (req, res, next) => {
 
 exports.updateStatusOrder = async (req, res, next) => {
   try {
-    const { subscription, paypalOrderId, stripeSessionID } = req.body;
-    console.log("---->" ,subscription, paypalOrderId, stripeSessionID)
+    const { subscription, paypalOrderId } = req.body;
+    console.log("---->" ,subscription, paypalOrderId)
     let venta = await Venta.findOne({ paypalOrderID: paypalOrderId });
 
     if (!venta) {
+      ///AQUIU es cuando el id viene  de stripe es una cadena lagra 
       venta = await Venta.findOne({ stripeSessionID: paypalOrderId });
       if (!venta) {
         return res.status(404).json({ message: 'Order not found' });

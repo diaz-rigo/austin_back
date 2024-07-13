@@ -46,6 +46,8 @@ exports.createSession = async (req, res) => {
       payment_method_types: ['card'],
       mode: "payment",
       line_items,
+      success_url: "https://austins.vercel.app/payment/order-success",
+      cancel_url: "https://austins.vercel.app/payment/order-detail?deliveryOption=inStore",
       customer_email: datoscliente.email,
       success_url,
       cancel_url,
