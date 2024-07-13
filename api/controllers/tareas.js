@@ -125,7 +125,7 @@ cron.schedule('0 * * * *', async () => {
                 <a href="https://austins.vercel.app/portal/detail/${ventaDetail.products[0].product._id}" style="background-color: #ff5733; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;">Ver Detalles del Producto</a>
                 <p style="font-size: 16px;">Nombre del Producto: ${ventaDetail.products[0].product.name}</p>
                 <img src="${ventaDetail.products[0].product.images[0]}" alt="${ventaDetail.products[0].product.name}" style="max-width: 200px; margin: 0 auto; display: block; margin-bottom: 10px;">
-                <p style="font-size: 14px;">ID de la Compra: ${venta.paypalOrderID}</p>
+                <p style="font-size: 14px;">ID de la Compra: ${venta.trackingNumber}</p>
                 <div style="margin-top: 20px;">
                 
                     <a  style="background-color: #007bff; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; margin-left: 10px;">Ir a Seguimiento de Pedido</a>
