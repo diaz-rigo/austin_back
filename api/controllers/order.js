@@ -164,6 +164,7 @@ exports.crearPedido = async (req, res, next) => {
     // Generar un código de pedido único
     const codigoPedido = generarCodigoPedido();
 
+    
     // Crear un nuevo objeto de pedido y detalle de pedido
     const pedido = new Pedido({
       _id: new mongoose.Types.ObjectId(),
@@ -297,14 +298,15 @@ exports.crearPedido = async (req, res, next) => {
 };
 
 
+// const nanoid = require('nanoid');
+
 exports.updateStatusOrder = async (req, res, next) => {
   try {
     const { subscription, paypalOrderId } = req.body;
-    console.log("---->" ,subscription, paypalOrderId)
+    console.log("---->", subscription, paypalOrderId);
     let venta = await Venta.findOne({ paypalOrderID: paypalOrderId });
 
     if (!venta) {
-      ///AQUIU es cuando el id viene  de stripe es una cadena lagra 
       venta = await Venta.findOne({ stripeSessionID: paypalOrderId });
       if (!venta) {
         return res.status(404).json({ message: 'Order not found' });
@@ -335,10 +337,14 @@ exports.updateStatusOrder = async (req, res, next) => {
 
     ventaDetail.status = 'PAID';
 
+    // Generar código de seguimiento
+    const trackingNumber = generarCodigoPedido()// Genera un código único de 10 caracteres
+    venta.trackingNumber = trackingNumber;
+
     const payload = {
       notification: {
         title: '📦 Seguimiento de Pedido',
-        body: `📄 Número de seguimiento: ${paypalOrderId}`,
+        body: `📄 Número de seguimiento: ${trackingNumber}`,
         icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
         vibrate: [200, 100, 200],
         sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
@@ -362,7 +368,7 @@ exports.updateStatusOrder = async (req, res, next) => {
             <div style="text-align: center; padding: 20px;">
               <h2 style="font-size: 24px; color: #333;">¡Gracias por tu compra en Pastelería Austin's! 🎉</h2>
               <p style="color: #555; font-size: 16px;">Tu pedido ha sido procesado con éxito y pronto estará en camino. A continuación, te proporcionamos el número de seguimiento de tu pedido y las instrucciones para consultar su estado:</p>
-              <p style="font-weight: bold; font-size: 16px;">📄 Número de Seguimiento: ${paypalOrderId}</p>
+              <p style="font-weight: bold; font-size: 16px;">📄 Número de Seguimiento: ${trackingNumber}</p>
               <p style="color: #555; font-size: 16px;">Instrucciones para consultar el estado del pedido:</p>
               <ol style="color: #555; font-size: 16px;">
                 <li>Ingresa a nuestro sitio web.</li>
@@ -401,7 +407,7 @@ exports.updateStatusOrder = async (req, res, next) => {
                 <li>📦 Gestión sencilla de tus direcciones de envío y métodos de pago.</li>
               </ul>
               <p style="color: #555; font-size: 16px;">Regístrate ahora y aprovecha al máximo tus compras en línea con nosotros. ¡Es rápido, fácil y gratuito!</p>
-              <a  style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Activar cuenta</a>
+              <a href="https://tusitio.com/activate-account" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Activar cuenta</a>
             </div>
             <p style="text-align: center; color: #777; font-size: 14px;">Si prefieres no activar tu cuenta en este momento, puedes ignorar este mensaje.</p>
           </div>
@@ -409,10 +415,11 @@ exports.updateStatusOrder = async (req, res, next) => {
       `,
       };
 
-      // Envío de correo de invitación solo si el usuario no es un invitado
+      // Envío de correo de invitación solo si el usuario es un invitado
       await enviarCorreo(mailOptionsInvitacion);
     }
 
+    await venta.save();
     await ventaDetail.save();
     res.status(200).json({ message: 'Estado del detalle de compra actualizado correctamente' });
   } catch (error) {
