@@ -46,11 +46,9 @@ exports.createSession = async (req, res) => {
       payment_method_types: ['card'],
       mode: "payment",
       line_items,
-      success_url: "https://austins.vercel.app/payment/order-success",
+      success_url: "https://austins.vercel.app/payment/order-success?token={CHECKOUT_SESSION_ID}",
       cancel_url: "https://austins.vercel.app/payment/order-detail?deliveryOption=inStore",
       customer_email: datoscliente.email,
-      success_url,
-      cancel_url,
       metadata: {
         tipoEntrega,
         dateselect,
@@ -98,6 +96,8 @@ exports.createSession = async (req, res) => {
       stripeSessionID: session.id,
     });
     await venta.save();
+
+    // const updatedSuccessUrl = `https://austins.vercel.app/payment/order-success?token=${session.id}`;
 
     return res.json({ url: session.url });
   } catch (error) {
