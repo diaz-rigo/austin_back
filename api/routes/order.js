@@ -8,6 +8,7 @@ const orderController = require('../controllers/order');
 // router.post('/', orderController.createorder
 router.post('/updateStatusOrder', orderController.updateStatusOrder);
 router.post('/solicitarPedido', orderController.crearPedido);
+router.post('/solicitarPedido2', orderController.crearPedido2);
 
 
 // router.put("/:category/:id/image", upload.single('image'), ProductController.updateImage);
