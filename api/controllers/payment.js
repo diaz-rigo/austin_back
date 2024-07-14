@@ -74,7 +74,7 @@ exports.createPayment = async (req, res, next) => {
             phone: datoscliente.phone,
             email: datoscliente.email,
             rol: 'GUEST',
-            password: 'contraseña123'
+            password: 'contraseñaPorDefecto'
         });
         await user.save();
     }
