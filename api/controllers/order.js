@@ -336,7 +336,13 @@ exports.updateStatusOrder = async (req, res, next) => {
     const userName = user.name;
 
     ventaDetail.status = 'PAID';
-
+    
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_KEY,
+      { expiresIn: '24h' } // El token expira en 24 horas
+    );
+  
     // // Generar código de seguimiento
     // const trackingNumber = generarCodigoPedido()// Genera un código único de 10 caracteres
     // venta.trackingNumber = trackingNumber;
@@ -354,7 +360,8 @@ exports.updateStatusOrder = async (req, res, next) => {
 
     // Envío de notificación push
     await enviarNotificacionPush(subscription, payload);
-
+      // Enviar correo de activación
+      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
     const mailOptionsSeguimiento = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: userEmail,
@@ -407,7 +414,7 @@ exports.updateStatusOrder = async (req, res, next) => {
                 <li>📦 Gestión sencilla de tus direcciones de envío y métodos de pago.</li>
               </ul>
               <p style="color: #555; font-size: 16px;">Regístrate ahora y aprovecha al máximo tus compras en línea con nosotros. ¡Es rápido, fácil y gratuito!</p>
-              <a href="https://tusitio.com/activate-account" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Activar cuenta</a>
+              <a href="${activationLink}" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Activar cuenta</a>
             </div>
             <p style="text-align: center; color: #777; font-size: 14px;">Si prefieres no activar tu cuenta en este momento, puedes ignorar este mensaje.</p>
           </div>
