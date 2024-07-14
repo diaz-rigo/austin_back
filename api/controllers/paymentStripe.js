@@ -79,7 +79,7 @@ exports.createSession = async (req, res) => {
         phone: datoscliente.phone,
         email: datoscliente.email,
         rol: 'GUEST',
-        password: 'defaultPassword',
+        password: 'contraseña123',
       });
       await user.save();
     }

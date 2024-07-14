@@ -108,6 +108,7 @@ exports.activarCuenta = async (req, res, next) => {
     // Actualizar la contraseña y establecer el estado a 'ACTIVE'
     user.password = hashedPassword;
     user.status = 'ACTIVE';
+    user.rol = 'CLIENT';
 
     await user.save();
 
