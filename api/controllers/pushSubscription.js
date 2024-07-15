@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const PushSubscription = require("../models/pushSubscription");
 const webpush = require('web-push');
-
+const User = require('../models/user');
 // Configurar las claves VAPID
 const vapidKeys = {
     publicKey: "BFYtOg9-LQWHmObZKXm4VIV2BImn5nBrhz4h37GQpbdj0hSBcghJG7h-wldz-fx9aTt7oaqKSS3KXhA4nXf32pY",
@@ -15,46 +15,48 @@ webpush.setVapidDetails(
 );
 // Crear una nueva suscripción
 // Create a new subscription
-exports.createSubscription2 = async (req, res, next) => {
+// Crear una nueva suscripción o actualizar si ya existe
+exports.createSubscription2 = (req, res, next) => {
     const { subscription, userId } = req.body;
 
     if (!subscription || !userId) {
         return res.status(400).json({ error: 'Subscription and userId are required' });
     }
 
-    try {
-        // Check if the subscription already exists
-        let existingSubscription = await PushSubscription.findOne({ endpoint: subscription.endpoint });
+    // Buscar si ya existe la suscripción
+    PushSubscription.findOne({ endpoint: subscription.endpoint })
+        .then(existingSubscription => {
+            if (existingSubscription) {
+                // Si ya existe, agregar el ID de la suscripción al array de suscripciones del usuario
+                return User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: existingSubscription._id } })
+                    .then(() => {
+                        res.status(200).json({ message: 'Subscription already exists', subscriptionId: existingSubscription._id });
+                    });
+            } else {
+                // Si no existe, crear una nueva suscripción
+                const newSubscription = new PushSubscription({
+                    _id: new mongoose.Types.ObjectId(),
+                    endpoint: subscription.endpoint,
+                    keys: subscription.keys
+                });
 
-        if (existingSubscription) {
-            // If it exists, add the subscription ID to the user's subscriptions array
-            await User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: existingSubscription._id } });
-            res.status(200).json({ message: 'Subscription already exists', subscriptionId: existingSubscription._id });
-        } else {
-            // If it does not exist, create a new subscription
-            const newSubscription = new PushSubscription({
-                _id: new mongoose.Types.ObjectId(),
-                endpoint: subscription.endpoint,
-                keys: subscription.keys
-            });
-
-            const savedSubscription = await newSubscription.save();
-
-            // Add the new subscription ID to the user's subscriptions array
-            await User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: savedSubscription._id } });
-
-            // Send welcome notification
-            enviarNotificacionLogeo(subscription);
-
-            res.status(201).json({ message: 'Subscription created successfully', subscriptionId: savedSubscription._id });
-        }
-    } catch (err) {
-        res.status(500).json({ error: err });
-    }
+                return newSubscription.save()
+                    .then(savedSubscription => {
+                        // Agregar el ID de la nueva suscripción al array de suscripciones del usuario
+                        return User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: savedSubscription._id } })
+                            .then(() => {
+                                // Enviar la notificación de inicio de sesión
+                                enviarNotificacionLogeo(subscription);
+                                res.status(201).json({ message: 'Subscription created successfully', subscriptionId: savedSubscription._id });
+                            });
+                    });
+            }
+        })
+        .catch(err => {
+            console.error('Error en createSubscription2:', err);
+            res.status(500).json({ error: err.message });
+        });
 };
-
-
-
 
 exports.createSubscription = (req, res, next) => {
     const { endpoint, keys } = req.body;
