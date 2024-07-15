@@ -61,6 +61,7 @@ exports.createSubscription2 = (req, res, next) => {
 // const PushSubscription = require('../models/PushSubscription');  // Adjust the path as per your project structure
 
 
+
 exports.createSubscription = (req, res, next) => {
     const { endpoint, keys } = req.body;
 
@@ -93,7 +94,6 @@ exports.createSubscription = (req, res, next) => {
             res.status(500).json({ error: err });
         });
 };
-
 
 function enviarNotificacionBienvenida(subscription) {
     // https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830998/sound/clmb7pi3g12frwqzn3vx.mp3
