@@ -14,6 +14,42 @@ const Venta = require("../models/ventaSchema");
 // Configurar variables de entorno
 dotenv.config();
 
+
+exports.list_compras_iduser = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+
+    const compras = await Venta.find({ user: userId })
+      .populate('details')
+      .exec();
+
+    if (!compras) {
+      return res.status(404).json({ message: "No se encontraron compras para el usuario." });
+    }
+
+    res.status(200).json(compras);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.list_pedidos_iduser = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+
+    const pedidos = await Pedido.find({ usuario: userId })
+      .populate('detallePedido')
+      .exec();
+
+    if (!pedidos) {
+      return res.status(404).json({ message: "No se encontraron pedidos para el usuario." });
+    }
+
+    res.status(200).json(pedidos);
+  } catch (error) {
+    next(error);
+  }
+};
 // Configurar el transporte de correo
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -24,6 +60,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASSMAIL,
   },
 });
+
+
 
 exports.consultaventas_or_pedidos_by_code = async (req, res, next) => {
   try {
@@ -55,28 +93,8 @@ exports.consultaventas_or_pedidos_by_code = async (req, res, next) => {
         // Devolver la respuesta al cliente
         res.status(200).json({ resultado });
       }
-      // let venta = await Venta.findOne({ paypalOrderID: code }).populate('details');
-      // if (venta) {
-      //   // Si se encuentra una venta, buscar los detalles de la venta
-      //   const detallesVenta = await VentaDetail.find({ venta: venta._id });
 
-      //   // Construir el objeto de resultado con los datos de la venta y los detalles de la venta
-      //   const usuario = await User.findById(venta.user);
-      //   const resultado = {
-      //     _id: venta._id,
-      //     user: usuario, // Agregar los datos del usuario al resultado
-      //     details: detallesVenta,
-      //     totalAmount: venta.totalAmount,
-      //     paypalOrderID: venta.paypalOrderID,
-      //     createdAt: venta.createdAt
-      //   };
-
-      //   // Devolver la respuesta al cliente
-      //   res.status(200).json({ resultado });
-      // } else {
-      //   // Si no se encuentra ni un pedido ni una venta con el código proporcionado, devolver un mensaje de error
-      //   res.status(404).json({ error: "Pedido o venta no encontrado" });
-      // }
+ 
     } else {
       // Acceder a los datos del usuario y los detalles del pedido
       const usuario = await User.findById(pedido.usuario);
