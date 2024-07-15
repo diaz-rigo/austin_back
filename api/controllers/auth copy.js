@@ -225,7 +225,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     const mailOptions = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: user.email,
-      subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
+      subject: '📧 Verificación de Correo Electrónico - Pastelería Austin\'s 🍰',
       html: `
         <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">

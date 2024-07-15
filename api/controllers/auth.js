@@ -425,35 +425,6 @@ function generateAuthToken(user) {
 
 
 
-// exports.consulta_us_tel_correo = async (req, res) => {
-//   let query = req.body.query;
-
-//   // Verifica si query no es una cadena
-//   if (typeof query !== 'string') {
-//     // Si no es una cadena, intenta convertirlo en una cadena
-//     query = query.toString();
-//   }
-
-  
-//   try {
-//     // Realiza la búsqueda combinada
-//     const users = await User.find({
-//       $or: [
-//         { email: query },
-//         { name: { $regex: query, $options: 'i' } }, // Búsqueda de nombre sin importar mayúsculas o minúsculas
-//         { phone: query }
-//       ]
-//     });
-
-//     if (users.length === 0) {
-//       return res.status(404).json({ message: 'Usuarios no encontrados' });
-//     }
-
-//     res.json(users);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 exports.consulta_us_tel_correo = async (req, res) => {
   let query = req.body.query;
 
@@ -484,26 +455,7 @@ exports.consulta_us_tel_correo = async (req, res) => {
   }
 };
 
-// exports.verfifica_respueta = async (req, res) => {
-//   const { username, selectedQuestion, answer } = req.body;
 
-//   try {
-//     // Buscar al usuario por el nombre de usuario o correo electrónico
-//     const user = await User.findOne({ $or: [{ email: username }, { username: username } , { phone: username }] });
-
-//     // Verificar si se encontró el usuario y la pregunta coincide con la guardada en la base de datos
-//     if (user && user.securityQuestion === selectedQuestion && user.securityAnswer === answer) {
-//       // Aquí puedes generar una nueva contraseña aleatoria y guardarla en la base de datos
-//       // Por simplicidad, aquí simplemente se devuelve un mensaje de éxito
-//       return res.json({ success: true, message: 'Contraseña recuperada exitosamente' });
-//     } else {
-//       return res.status(400).json({ success: false, message: ' respuesta incorrecta' });
-//     }
-//   } catch (error) {
-//     console.error('Error al recuperar la contraseña:', error);
-//     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
-//   }
-// };
 
 exports.verfifica_respueta = async (req, res) => {
   const { username, selectedQuestion, answer } = req.body;

@@ -58,7 +58,7 @@ exports.sendActivationEmail = async (req, res) => {
     const mailOptions = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: email,
-      subject: 'Activa tu cuenta en Pastelería Austin\'s',
+      subject: '¡Activa tu cuenta en Pastelería Austin\'s! 🎂🎈🌟',  // Ejemplo de emojis adicionales al asunto
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
           <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
@@ -141,7 +141,7 @@ async function enviarCorreoElectronico(user, password) {
   const mailOptions = {
     from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
     to: user.email,
-    subject: '¡Cuenta Activada!',
+    subject: '¡Cuenta Activada! 🎉',  // Aquí agregué el emoji directamente al asunto
     html: `
       <div style="font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
         <h1 style="color: #d17a3b; text-align: center;">¡Cuenta Activada!</h1>

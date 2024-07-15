@@ -134,7 +134,7 @@ exports.crearPedido = async (req, res, next) => {
       const mailOptionsActivacion = {
         from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
         to: datosPedido.correo,
-        subject: 'Activa tu cuenta en Pastelería Austin\'s',
+        subject: '¡Activa tu cuenta en Pastelería Austin\'s! 🎂🎈🌟',  // Ejemplo de emojis adicionales al asunto
         html: `
           <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
             <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>

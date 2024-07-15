@@ -1,21 +1,20 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/editprofile");
+const perfil = require("../controllers/editprofile");
 const multer = require('multer');
-
-// Configuración de almacenamiento de multer
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + '-' + file.originalname);
-    }
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
 
 const upload = multer({ storage });
+router.put('/:userId/update-photo', perfil.updateurlphotouser);
 
-// Ruta para editar perfil y subir foto de perfil
-router.post('/edit/:userId', upload.single('profilePhoto'), userController.editProfile);
+// Ruta para subir la imagen
+router.post('/upload-image-profile', upload.single('profilePhoto'), perfil.uploadImageProfile);
 
 module.exports = router;
