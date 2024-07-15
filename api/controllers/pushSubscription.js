@@ -30,6 +30,8 @@ exports.createSubscription2 = (req, res, next) => {
                 // Si ya existe, agregar el ID de la suscripción al array de suscripciones del usuario
                 return User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: existingSubscription._id } })
                     .then(() => {
+                           // Enviar la notificación de inicio de sesión
+                        enviarNotificacionLogeo(subscription);
                         res.status(200).json({ message: 'Subscription already exists', subscriptionId: existingSubscription._id });
                     });
             } else {
