@@ -68,7 +68,7 @@ exports.createSubscription = (req, res, next) => {
         .then(existingSubscription => {
             if (existingSubscription) {
                 // Subscription already exists, send welcome notification directly
-                enviarNotificacionBienvenida(existingSubscription);
+                // enviarNotificacionBienvenida(existingSubscription);
                 return res.status(200).json(existingSubscription);
             } else {
                 // Create a new subscription
