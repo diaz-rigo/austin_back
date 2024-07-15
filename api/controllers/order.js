@@ -16,6 +16,7 @@ const cloudinary = require('../utils/cloudinary'); // Importa la configuración 
 const jwt = require('jsonwebtoken');
 // Configurar variables de entorno
 dotenv.config();
+const PushSubscription = require('../models/pushSubscription'); // Importa el modelo de suscripción push
 
 // Configurar el transporte de correo
 const transporter = nodemailer.createTransport({
@@ -83,6 +84,15 @@ const enviarCorreo = async (mailOptions) => {
 
 // Función para enviar notificación push
 const enviarNotificacionPush = async (subscription, payload) => {
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    console.log('Notificación push enviada con éxito');
+  } catch (error) {
+    console.error('Error al enviar notificación push:', error);
+    throw error;
+  }
+};
+const enviarNotificacionPush2 = async (subscription, payload,iduser) => {
   try {
     await webpush.sendNotification(subscription, JSON.stringify(payload));
     console.log('Notificación push enviada con éxito');
@@ -351,6 +361,44 @@ exports.crearPedido2 = async (req, res, next) => {
 
     // Guardar el pedido en la base de datos
     await pedido.save();
+ // Consultar las suscripciones del usuario
+ if (existingUser && existingUser.subscriptions && existingUser.subscriptions.length > 0) {
+  for (const subscriptionId of existingUser.subscriptions) {
+    // Buscar la suscripción en la base de datos
+    const subscription = await PushSubscription.findById(subscriptionId);
+    if (subscription) {
+      // Preparar y enviar la notificación push
+      const payload = {
+        notification: {
+          title: 'Seguimiento de tu Pedido 🍰',
+          body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
+          icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+          vibrate: [200, 100, 200],
+          sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
+          priority: 'high',
+          data: {
+            url: "https://austins.vercel.app" // Enlace al sitio o aplicación
+          },
+          actions: [
+            { action: "ver_pedido", title: "Ver Pedido" },
+          ],
+          expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
+          timeToLive: 28 * 86400, // Tiempo de vida en segundos
+          silent: false // No silenciar
+        }
+      };
+
+      try {
+        // Envío de la notificación push
+        await enviarNotificacionPush2(subscription, payload, existingUser._id);
+        console.log('Notificación push enviada exitosamente');
+      } catch (error) {
+        console.error('Error al enviar la notificación push:', error);
+        // Manejar el error de manera adecuada
+      }
+    }
+  }
+}
 
     // Enviar notificación por correo y mensaje de notificación si es la primera vez del usuario
     if (!existingUser) {
@@ -386,30 +434,30 @@ exports.crearPedido2 = async (req, res, next) => {
 
       // Enviar notificación push si se proporciona una suscripción
       if (datosPedido.suscripcion) {
-        const payload = {
-          notification: {
-            title: 'Seguimiento de tu Pedido 🍰',
-            body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
-            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-            vibrate: [200, 100, 200],
-            sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
-            priority: 'high',
-            data: {
-              url: "https://austins.vercel.app" // Enlace al sitio o aplicación
-            },
-            actions: [
-              { action: "ver_pedido", title: "Ver Pedido" },
-            ],
-            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
-            timeToLive: 28 * 86400, // Tiempo de vida en segundos
-            silent: false // No silenciar
-          }
-        };
+        // const payload = {
+        //   notification: {
+        //     title: 'Seguimiento de tu Pedido 🍰',
+        //     body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
+        //     icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+        //     vibrate: [200, 100, 200],
+        //     sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
+        //     priority: 'high',
+        //     data: {
+        //       url: "https://austins.vercel.app" // Enlace al sitio o aplicación
+        //     },
+        //     actions: [
+        //       { action: "ver_pedido", title: "Ver Pedido" },
+        //     ],
+        //     expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
+        //     timeToLive: 28 * 86400, // Tiempo de vida en segundos
+        //     silent: false // No silenciar
+        //   }
+        // };
 
         try {
           // Envío de la notificación push
-          await enviarNotificacionPush(datosPedido.suscripcion, payload);
-          console.log('Notificación push enviada exitosamente');
+          // await enviarNotificacionPush2(datosPedido.suscripcion, payload,existingUser._id);
+          console.log('Notificación push enviada exitosamente_____');
         } catch (error) {
           console.error('Error al enviar la notificación push:', error);
           // Manejar el error de manera adecuada

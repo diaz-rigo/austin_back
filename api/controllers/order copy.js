@@ -164,6 +164,7 @@ exports.crearPedido = async (req, res, next) => {
     // Generar un código de pedido único
     const codigoPedido = generarCodigoPedido();
 
+    
     // Crear un nuevo objeto de pedido y detalle de pedido
     const pedido = new Pedido({
       _id: new mongoose.Types.ObjectId(),
@@ -194,6 +195,8 @@ exports.crearPedido = async (req, res, next) => {
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
+      mensajePersonalizado: datosPedido.mensajePersonalizado || '',
+      decoracion: datosPedido.decoracion || '',
       precioTotal: precioTotal,
       color: datosPedido.color_personalizado,
 
@@ -296,15 +299,148 @@ exports.crearPedido = async (req, res, next) => {
   }
 };
 
+exports.crearPedido2 = async (req, res, next) => {
+  const datosPedido = req.body;
+  const files = req.files; // Obtener los archivos cargados si se utiliza el middleware adecuado en Express
+  console.log(datosPedido);
+
+  try {
+    // Verificar si el usuario ya existe en la base de datos
+    const existingUser = await User.findOne({ email: datosPedido.correo });
+     console.log("user___encontrado",existingUser)
+    // Generar un código de pedido único
+    const codigoPedido = generarCodigoPedido();
+
+    // Crear un nuevo objeto de pedido y detalle de pedido
+    const pedido = new Pedido({
+      _id: new mongoose.Types.ObjectId(),
+      usuario: existingUser._id,
+      estadoPedido: datosPedido.estadoPedido || 'Pendiente',
+      codigoPedido: codigoPedido,
+    });
+
+    // Calcular el precio total del pedido
+    const precioPorKilo = datosPedido.sabor?.precioPorKilo || 400; // Obtener el precio por kilo del sabor, si está disponible
+    const cantidad = datosPedido.cantidad || 0;
+    const precioTotal = precioPorKilo * cantidad;
+
+    // Verificar y asignar los campos del detalle del pedido según los datos recibidos
+    const detallePedidoData = {
+      _id: new mongoose.Types.ObjectId(),
+      pedido: pedido._id,
+      nombre: datosPedido.nombre || '',
+      cantidad: datosPedido.cantidad || 0,
+      dia: datosPedido.dia ? new Date(datosPedido.dia) : new Date(), // Si no se proporciona la fecha, usar la fecha actual
+      hora: datosPedido.hora || '',
+      modo: datosPedido.modo ? datosPedido.modo : datosPedido.modoPersonalizado || '',
+      modoPersonalizado: datosPedido.modoPersonalizado || '',
+      sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
+      saborPersonalizado: datosPedido.saborpersonalizado || '',
+      mensajePersonalizado: datosPedido.mensajePersonalizado || '',
+      decoracion: datosPedido.decoracion || '',
+      precioTotal: precioTotal,
+      color: datosPedido.color_personalizado,
+    };
+
+    // Guardar el detalle del pedido en la base de datos
+    const detallePedido = new PedidoDetalle(detallePedidoData);
+    await detallePedido.save();
+
+    // Asociar el detalle del pedido al pedido principal
+    pedido.detallePedido.push(detallePedido);
+
+    // Guardar el pedido en la base de datos
+    await pedido.save();
+
+    // Enviar notificación por correo y mensaje de notificación si es la primera vez del usuario
+    if (!existingUser) {
+      const mailOptionsSeguimiento = {
+        from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
+        to: datosPedido.correo,
+        subject: '¡Tu pedido ha sido solicitado! - Pastelería Austin\'s',
+        html: `
+          <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
+              <div style="text-align: center; padding: 20px;">
+                <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Logo de Pastelería Austin's" style="max-width: 100px;">
+              </div>
+              <div style="text-align: center; padding: 20px;">
+                <p style="color: #555; font-size: 16px;">¡Gracias por confiar en Pastelería Austin's para tus deliciosos postres! Tu pedido ha sido solicitado con éxito y pronto nos comunicaremos.</p>
+                <p style="font-weight: bold; font-size: 16px;">CODIGO PEDIDO: ${codigoPedido} 🎂</p>
+                <p style="color: #555; font-size: 16px;">Sigue estos pasos para consultar el estado de tu pedido:</p>
+                <ol style="color: #555; font-size: 16px;">
+                  <li>Ingresa a nuestro <a href="https://austins.vercel.app">sitio web 🌐</a>.</li>
+                  <li>Dirígete a la sección de "Seguimiento de Pedidos" o "Mis Pedidos".</li>
+                  <li>Ingresa el número de pedido proporcionado arriba.</li>
+                  <li>Consulta el estado actualizado de tu pedido.</li>
+                </ol>
+              </div>
+              <p style="text-align: center; color: #777; font-size: 14px;">¡Esperamos que disfrutes de tu pedido! Si necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte. 🍰🎉</p>
+            </div>
+          </div>
+        `,
+      };
+
+      // Envío de correo electrónico
+      await enviarCorreo(mailOptionsSeguimiento);
+
+      // Enviar notificación push si se proporciona una suscripción
+      if (datosPedido.suscripcion) {
+        const payload = {
+          notification: {
+            title: 'Seguimiento de tu Pedido 🍰',
+            body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
+            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+            vibrate: [200, 100, 200],
+            sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
+            priority: 'high',
+            data: {
+              url: "https://austins.vercel.app" // Enlace al sitio o aplicación
+            },
+            actions: [
+              { action: "ver_pedido", title: "Ver Pedido" },
+            ],
+            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
+            timeToLive: 28 * 86400, // Tiempo de vida en segundos
+            silent: false // No silenciar
+          }
+        };
+
+        try {
+          // Envío de la notificación push
+          await enviarNotificacionPush(datosPedido.suscripcion, payload);
+          console.log('Notificación push enviada exitosamente');
+        } catch (error) {
+          console.error('Error al enviar la notificación push:', error);
+          // Manejar el error de manera adecuada
+        }
+      }
+    }
+
+    res.status(201).json({
+      message: "Pedido de pastelería creado con éxito",
+      pedido: pedido
+    });
+  } catch (error) {
+    // En caso de que ocurra un error, manejarlo adecuadamente y enviar una respuesta al cliente
+    console.error('Error al crear pedido:', error);
+    res.status(500).json({
+      error: ERROR_INTERNAL_SERVER
+    });
+  }
+};
+
+
+
+// const nanoid = require('nanoid');
 
 exports.updateStatusOrder = async (req, res, next) => {
   try {
     const { subscription, paypalOrderId } = req.body;
-    console.log("---->" ,subscription, paypalOrderId)
+    console.log("---->", subscription, paypalOrderId);
     let venta = await Venta.findOne({ paypalOrderID: paypalOrderId });
 
     if (!venta) {
-      ///AQUIU es cuando el id viene  de stripe es una cadena lagra 
       venta = await Venta.findOne({ stripeSessionID: paypalOrderId });
       if (!venta) {
         return res.status(404).json({ message: 'Order not found' });
@@ -334,11 +470,21 @@ exports.updateStatusOrder = async (req, res, next) => {
     const userName = user.name;
 
     ventaDetail.status = 'PAID';
+    
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_KEY,
+      { expiresIn: '24h' } // El token expira en 24 horas
+    );
+  
+    // // Generar código de seguimiento
+    // const trackingNumber = generarCodigoPedido()// Genera un código único de 10 caracteres
+    // venta.trackingNumber = trackingNumber;
 
     const payload = {
       notification: {
         title: '📦 Seguimiento de Pedido',
-        body: `📄 Número de seguimiento: ${paypalOrderId}`,
+        body: `📄 Número de seguimiento: ${venta.trackingNumber}`,
         icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
         vibrate: [200, 100, 200],
         sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
@@ -348,7 +494,8 @@ exports.updateStatusOrder = async (req, res, next) => {
 
     // Envío de notificación push
     await enviarNotificacionPush(subscription, payload);
-
+      // Enviar correo de activación
+      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
     const mailOptionsSeguimiento = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: userEmail,
@@ -362,7 +509,7 @@ exports.updateStatusOrder = async (req, res, next) => {
             <div style="text-align: center; padding: 20px;">
               <h2 style="font-size: 24px; color: #333;">¡Gracias por tu compra en Pastelería Austin's! 🎉</h2>
               <p style="color: #555; font-size: 16px;">Tu pedido ha sido procesado con éxito y pronto estará en camino. A continuación, te proporcionamos el número de seguimiento de tu pedido y las instrucciones para consultar su estado:</p>
-              <p style="font-weight: bold; font-size: 16px;">📄 Número de Seguimiento: ${paypalOrderId}</p>
+              <p style="font-weight: bold; font-size: 16px;">📄 Número de Seguimiento: ${venta.trackingNumber}</p>
               <p style="color: #555; font-size: 16px;">Instrucciones para consultar el estado del pedido:</p>
               <ol style="color: #555; font-size: 16px;">
                 <li>Ingresa a nuestro sitio web.</li>
@@ -401,7 +548,7 @@ exports.updateStatusOrder = async (req, res, next) => {
                 <li>📦 Gestión sencilla de tus direcciones de envío y métodos de pago.</li>
               </ul>
               <p style="color: #555; font-size: 16px;">Regístrate ahora y aprovecha al máximo tus compras en línea con nosotros. ¡Es rápido, fácil y gratuito!</p>
-              <a  style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Activar cuenta</a>
+              <a href="${activationLink}" style="display: inline-block; padding: 10px 20px; background-color: #ff5733; color: #fff; text-decoration: none; border-radius: 5px;">Activar cuenta</a>
             </div>
             <p style="text-align: center; color: #777; font-size: 14px;">Si prefieres no activar tu cuenta en este momento, puedes ignorar este mensaje.</p>
           </div>
@@ -409,10 +556,11 @@ exports.updateStatusOrder = async (req, res, next) => {
       `,
       };
 
-      // Envío de correo de invitación solo si el usuario no es un invitado
+      // Envío de correo de invitación solo si el usuario es un invitado
       await enviarCorreo(mailOptionsInvitacion);
     }
 
+    await venta.save();
     await ventaDetail.save();
     res.status(200).json({ message: 'Estado del detalle de compra actualizado correctamente' });
   } catch (error) {
