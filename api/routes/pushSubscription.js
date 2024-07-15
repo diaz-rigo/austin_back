@@ -5,6 +5,7 @@ const pushSubscriptionController = require('../controllers/pushSubscription');
 
 router.get('/', pushSubscriptionController.getAllSubscriptions);
 router.post('/', pushSubscriptionController.createSubscription);
+router.post('/logeo', pushSubscriptionController.createSubscription2);
 router.get('/:id', pushSubscriptionController.getSubscription);
 router.delete('/:id', pushSubscriptionController.deleteSubscription);
 

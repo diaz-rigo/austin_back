@@ -195,6 +195,8 @@ exports.crearPedido = async (req, res, next) => {
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
+      mensajePersonalizado: datosPedido.mensajePersonalizado || '',
+      decoracion: datosPedido.decoracion || '',
       precioTotal: precioTotal,
       color: datosPedido.color_personalizado,
 
@@ -334,6 +336,8 @@ exports.crearPedido2 = async (req, res, next) => {
       modoPersonalizado: datosPedido.modoPersonalizado || '',
       sabor: datosPedido.sabor ? datosPedido.sabor.name : datosPedido.saborpersonalizado || '',
       saborPersonalizado: datosPedido.saborpersonalizado || '',
+      mensajePersonalizado: datosPedido.mensajePersonalizado || '',
+      decoracion: datosPedido.decoracion || '',
       precioTotal: precioTotal,
       color: datosPedido.color_personalizado,
     };
@@ -421,7 +425,7 @@ exports.crearPedido2 = async (req, res, next) => {
     // En caso de que ocurra un error, manejarlo adecuadamente y enviar una respuesta al cliente
     console.error('Error al crear pedido:', error);
     res.status(500).json({
-      error: 'ERROR_INTERNAL_SERVER'
+      error: ERROR_INTERNAL_SERVER
     });
   }
 };

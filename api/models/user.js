@@ -30,6 +30,7 @@ const userSchema = mongoose.Schema({
     loginAttempts: { type: Number, default: 0 },  // Contador de intentos de inicio de sesión fallidos
     lockoutUntil: { type: Date },  // Fecha hasta la cual la cuenta está bloqueada temporalmente
     profilePhoto: { type: String },  // Nuevo campo para la URL de la foto de perfil
+    subscriptions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PushSubscription' }]  
 }, { versionKey: false });
 
 

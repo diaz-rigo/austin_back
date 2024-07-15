@@ -13,49 +13,20 @@ webpush.setVapidDetails(
     vapidKeys.publicKey,
     vapidKeys.privateKey
 );
-// Crear una nueva suscripción
-// Create a new subscription
-exports.createSubscription2 = async (req, res, next) => {
-    const { subscription, userId } = req.body;
 
-    if (!subscription || !userId) {
-        return res.status(400).json({ error: 'Subscription and userId are required' });
-    }
-
-    try {
-        // Check if the subscription already exists
-        let existingSubscription = await PushSubscription.findOne({ endpoint: subscription.endpoint });
-
-        if (existingSubscription) {
-            // If it exists, add the subscription ID to the user's subscriptions array
-            await User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: existingSubscription._id } });
-            res.status(200).json({ message: 'Subscription already exists', subscriptionId: existingSubscription._id });
-        } else {
-            // If it does not exist, create a new subscription
-            const newSubscription = new PushSubscription({
-                _id: new mongoose.Types.ObjectId(),
-                endpoint: subscription.endpoint,
-                keys: subscription.keys
-            });
-
-            const savedSubscription = await newSubscription.save();
-
-            // Add the new subscription ID to the user's subscriptions array
-            await User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: savedSubscription._id } });
-
-            // Send welcome notification
-            enviarNotificacionLogeo(subscription);
-
-            res.status(201).json({ message: 'Subscription created successfully', subscriptionId: savedSubscription._id });
-        }
-    } catch (err) {
-        res.status(500).json({ error: err });
-    }
+// Obtener todas las suscripciones
+exports.getAllSubscriptions = (req, res, next) => {
+    PushSubscription.find()
+        .exec()
+        .then(subscriptions => {
+            res.status(200).json(subscriptions);
+        })
+        .catch(err => {
+            res.status(500).json({ error: err });
+        });
 };
 
-
-
-
+// Crear una nueva suscripción
 exports.createSubscription = (req, res, next) => {
     const { endpoint, keys } = req.body;
 
@@ -102,44 +73,6 @@ function enviarNotificacionBienvenida(subscription) {
             console.error('Error al enviar notificación de bienvenida:', err);
         });
 }
-function enviarNotificacionLogeo(subscription) {
-    const payload = {
-        notification: {
-            title: "¡Inicio de sesión exitoso!",
-            body: "Gracias por iniciar sesión en Austins Repostería. Descubre nuestras deliciosas creaciones.",
-            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-            vibrate: [200, 50, 200],
-            sound: "https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830998/sound/clmb7pi3g12frwqzn3vx.mp3",
-            actions: [{
-                action: "explore",
-                title: "Ver nuestras especialidades",
-                url: "https://austins.vercel.app"
-            }]
-        }
-    };
-    
-    webpush.sendNotification(subscription, JSON.stringify(payload))
-        .then(() => {
-            console.log('Notificación de inicio de sesión enviada con éxito');
-        })
-        .catch(err => {
-            console.error('Error al enviar notificación de inicio de sesión:', err);
-        });
-}
-
-// Obtener todas las suscripciones
-exports.getAllSubscriptions = (req, res, next) => {
-    PushSubscription.find()
-        .exec()
-        .then(subscriptions => {
-            res.status(200).json(subscriptions);
-        })
-        .catch(err => {
-            res.status(500).json({ error: err });
-        });
-};
-
-
 
 // Obtener una suscripción por ID
 exports.getSubscription = (req, res, next) => {
