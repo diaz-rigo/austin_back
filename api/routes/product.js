@@ -19,4 +19,8 @@ router.post("/page/:limit/:skip", ProductController.getAllPaginate);
 router.put("/:productId/status", ProductController.updateProductStatus);
 router.delete('/:id/:imageName', ProductController.deleteImage);
 
+
+
+router.get('/name/:name', ProductController.getByName); // Nueva ruta para buscar productos por nombre
+
 module.exports = router;

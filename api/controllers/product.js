@@ -4,6 +4,40 @@ const path = require('path');
 const fs = require('fs');
 const cloudinary = require('../utils/cloudinary'); // Importa la configuración de Cloudinary
 
+
+
+
+
+exports.getByName = (req, res, next) => {
+  const productName = req.params.name;
+
+  Product.find({ name: { $regex: new RegExp(productName, "i") } }) // Búsqueda insensible a mayúsculas/minúsculas
+      .exec()
+      .then(docs => {
+          if (!docs || docs.length === 0) {
+              return res.status(404).json({ message: "No products found with the given name" });
+          }
+          res.status(200).json(docs);
+      })
+      .catch(err => {
+          res.status(500).json({ error: err });
+      });
+};
+exports.get = (req, res, next) => {
+  Product.findById(req.params.id)
+    .exec()
+    .then(doc => {
+      if (!doc) {
+        return res.status(404).json({ message: "Not found" });
+      }
+      res.status(200).json(doc);
+    })
+    .catch(err => {
+      res.status(500).json({ error: err });
+    });
+};
+
+
 exports.deleteImage = async (req, res, next) => {
   const productId = req.params.id;
   const imageName = req.params.imageName;
