@@ -6,6 +6,7 @@ Alexa: "¡Bienvenido a Autins Huejutla! Puedes iniciar sesión diciendo 'Inicia 
 
 Usuario: "Inicia sesión con el nombre Juan y el teléfono 5551234567."
 Usuario: "Inicia sesión con el nombre rigoberto y el teléfono 7711512740."
+Usuario: "Inicia sesión con el nombre pedro y el teléfono 8882323232."
 
 Alexa: "He registrado tu nombre como Juan y tu número de teléfono como 5551234567. Has iniciado sesión exitosamente. ¿Cómo puedo asistirte hoy?"
 
