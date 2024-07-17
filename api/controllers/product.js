@@ -23,6 +23,10 @@ exports.getByName = (req, res, next) => {
           res.status(500).json({ error: err });
       });
 };
+
+
+
+
 exports.get = (req, res, next) => {
   Product.findById(req.params.id)
     .exec()

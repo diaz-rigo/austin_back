@@ -14,7 +14,7 @@ Usuario: "Muestra los productos."
 Alexa: "Estos son los productos disponibles: Producto A, Producto B, Producto C. ¿Cuál te interesa?"
 
 Usuario: "Quiero Producto A."
-Usuario: "Quiero Producto Cupcakes de Vainilla."
+Usuario: "Quiero Cupcakes de Vainilla."
 
 Alexa: "Has seleccionado Producto A. ¿Quieres confirmar la compra?"
 

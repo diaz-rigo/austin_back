@@ -10,5 +10,6 @@ const AccountActivationController = require('../controllers/accountActivation');
 // Otras rutas existentes...
 router.post("/sign-in", Alexa_AuthController.AUTH_USER_);
 
+router.post('/compra', Alexa_AuthController.CREATE_COMPRA);
 
 module.exports = router;

@@ -9,8 +9,8 @@ const ventaDetailSchema = mongoose.Schema({
         quantity: { type: Number, required: true }
     }],
     totalAmount: { type: Number, required: true },
-    deliveryType: { type: String, required: true },
-    deliveryDate: { type: Date, required: true },
+    deliveryType: { type: String, },
+    deliveryDate: { type: Date },
     instrucion: { type: String },
     status: { type: String, required: true, default: 'PENDING' },
     createdAt: { type: Date, default: Date.now }
