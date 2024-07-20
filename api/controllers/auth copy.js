@@ -225,7 +225,7 @@ exports.signUpAndVerifyEmail = async (req, res, next) => {
     const mailOptions = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: user.email,
-      subject: '📧 Verificación de Correo Electrónico - Pastelería Austin\'s 🍰',
+      subject: 'Verificación de Correo Electrónico - Pastelería Austin\'s',
       html: `
         <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
@@ -435,17 +435,18 @@ exports.consulta_us_tel_correo = async (req, res) => {
   }
 
   try {
-    // Realiza la búsqueda combinada
+    // Realiza la búsqueda combinada, incluyendo la condición de inactividad
     const users = await User.find({
       $or: [
         { email: query },
         { name: { $regex: query, $options: 'i' } }, // Búsqueda de nombre sin importar mayúsculas o minúsculas
         { phone: query }
-      ]
+      ],
+      status: 'ACTIVE' // Agrega esta condición para filtrar usuarios inactivos
     });
 
     if (users.length === 0) {
-      return res.status(404).json({ message: 'Usuarios no encontrados' });
+      return res.status(404).json({ message: 'Usuario no encontrado ' });
     }
 
     res.json(users);
@@ -454,25 +455,72 @@ exports.consulta_us_tel_correo = async (req, res) => {
   }
 };
 
+
+
 exports.verfifica_respueta = async (req, res) => {
   const { username, selectedQuestion, answer } = req.body;
 
   try {
-    // Buscar al usuario por el nombre de usuario o correo electrónico
-    const user = await User.findOne({ $or: [{ email: username }, { username: username }] });
+    let user;
 
-    // Verificar si se encontró el usuario y la pregunta coincide con la guardada en la base de datos
-    if (user && user.securityQuestion === selectedQuestion && user.securityAnswer === answer) {
-      // Aquí puedes generar una nueva contraseña aleatoria y guardarla en la base de datos
-      // Luego, enviarla por correo electrónico al usuario o proporcionarla de alguna otra manera
-      // Por simplicidad, aquí simplemente se devuelve un mensaje de éxito
-      return res.json({ success: true, message: 'Contraseña recuperada exitosamente' });
-    } else {
-      return res.status(400).json({ success: false, message: 'Pregunta secreta o respuesta incorrecta' });
+    // Buscar al usuario por correo electrónico
+    user = await User.findOne({ email: username });
+    if (user) {
+      return handleResponse(res, user, selectedQuestion, answer);
     }
+
+    // Buscar al usuario por nombre de usuario
+    user = await User.findOne({ name: username });
+    if (user) {
+      return handleResponse(res, user, selectedQuestion, answer);
+    }
+
+    // Buscar al usuario por número de teléfono
+    user = await User.findOne({ phone: username });
+    console.log(username);
+    console.log(user);
+    if (user) {
+      return handleResponse(res, user, selectedQuestion, answer);
+    }
+
+    // Si no se encuentra ningún usuario con ninguno de los tipos de entrada
+    return res.status(400).json({ success: false, message: 'Usuario no encontrado' });
   } catch (error) {
     console.error('Error al recuperar la contraseña:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };
 
+// Función para verificar la respuesta de seguridad
+async function handleResponse(res, user, selectedQuestion, answer) {
+  if (user.securityQuestion === selectedQuestion && user.securityAnswer === answer) {
+    return res.json({ success: true, message: 'Contraseña recuperada exitosamente' ,user});
+  } else {
+    return res.status(400).json({ success: false, message: 'Respuesta incorrecta' });
+  }
+}
+
+
+
+exports.cambiarContrasena = async (req, res) => {
+  const { userId } = req.body; // Suponiendo que estás enviando el ID del usuario desde el cliente
+  const { newPassword } = req.body;
+
+  try {
+    // Buscar al usuario por ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    // Actualizar la contraseña del usuario
+    user.password = newPassword;
+    await user.save();
+
+    return res.json({ success: true, message: 'Contraseña cambiada exitosamente' });
+  } catch (error) {
+    console.error('Error al cambiar la contraseña:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
