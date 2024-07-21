@@ -84,17 +84,26 @@ cron.schedule('*/30 * * * * *', async () => {
 
 
 
-// Programa la tarea cron para ejecutarse cada minuto
-// cron.schedule('* * * * *', async () => {
-
 
 cron.schedule('0 * * * *', async () => {
     console.log('Running a task every hour');
+    const timeLimit = 2 * 24 * 60 * 60 * 1000;
 
     try {
         const ventasPendientes = await VentaDetail.find({ status: 'PENDING' }).populate('user').populate('products.product');
 
         for (const ventaDetail of ventasPendientes) {
+            // Calcula el tiempo transcurrido desde la creación de la venta
+            const timeElapsed = new Date() - new Date(ventaDetail.createdAt);
+
+            // Si el tiempo transcurrido es mayor al límite de tiempo, actualiza el estado a "EXPIRED"
+            if (timeElapsed > timeLimit) {
+                ventaDetail.status = 'EXPIRED';
+                await ventaDetail.save();
+                console.log(`Venta ${ventaDetail._id} actualizada a EXPIRED`);
+                continue;
+            }
+
             console.log('Detalles de la compra:');
             console.log(ventaDetail);
             console.log('--------------------------------------');
@@ -108,30 +117,32 @@ cron.schedule('0 * * * *', async () => {
             const venta = await Venta.findOne({ details: ventaDetail._id });
 
             const htmlMessage = `
-                    <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
-                        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
-                            <div style="text-align: center; padding: 20px;">
-                                <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
-                            </div>
-                            <div style="text-align: center; padding: 20px;">
-                                <h2 style="font-size: 24px;">¡Compra Pendiente!</h2>
-                                <p style="color: #555; font-size: 16px;">Hola ${userName},</p>
-                                <div style="background-color: #ffffff; color: #ff5733; border-radius: 5px; padding: 10px; margin-bottom: 20px;">
-                                    <p style="font-size: 14px; font-weight: bold;">Detalles de la Entrega:</p>
-                                    <p style="font-size: 14px;">Tipo de entrega: ${ventaDetail.deliveryType}</p>
-                                </div>
-                                <p style="color: #555; font-size: 16px;">Tenemos una compra pendiente en tu cuenta. Aquí está el primer producto:</p>
-                                <a href="https://austins.vercel.app/portal/detail/${ventaDetail.products[0].product._id}" style="background-color: #ff5733; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;">Ver Detalles del Producto</a>
-                                <p style="font-size: 16px;">Nombre del Producto: ${ventaDetail.products[0].product.name}</p>
-                                <img src="${ventaDetail.products[0].product.images[0]}" alt="${ventaDetail.products[0].product.name}" style="max-width: 200px; margin: 0 auto; display: block; margin-bottom: 10px;">
-                                <p style="font-size: 14px;">ID de la Compra: ${venta.trackingNumber}</p>
-                                <div style="margin-top: 20px;">
-                                    <a href="#" style="background-color: #007bff; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; margin-left: 10px;">Ir a Seguimiento de Pedido</a>
-                                </div>
-                            </div>
-                        </div>
+            <div style="background-color: #f5f5f5; padding: 20px; font-family: 'Arial', sans-serif;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);">
+                    <div style="text-align: center; padding: 20px;">
+                        <img src="https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png" alt="Austin's Logo" style="max-width: 100px;">
                     </div>
-                `;
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="font-size: 24px;">¡Compra Pendiente! 🛒</h2>
+                        <p style="color: #555; font-size: 16px;">Hola ${userName},</p>
+                        <div style="background-color: #ffffff; color: #ff5733; border-radius: 5px; padding: 10px; margin-bottom: 20px;">
+                            <p style="font-size: 14px; font-weight: bold;">Detalles de la Entrega 📦:</p>
+                            <p style="font-size: 14px;">Tipo de entrega: ${ventaDetail.deliveryType}</p>
+                        </div>
+                        <p style="color: #555; font-size: 16px;">Tenemos una compra pendiente en tu cuenta. Aquí está el primer producto:</p>
+                        <a href="https://austins.vercel.app/portal/detail/${ventaDetail.products[0].product._id}" style="background-color: #ff5733; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;">Ver Detalles del Producto 🔍</a>
+                        <p style="font-size: 16px;">Nombre del Producto: ${ventaDetail.products[0].product.name}</p>
+                        <img src="${ventaDetail.products[0].product.images[0]}" alt="${ventaDetail.products[0].product.name}" style="max-width: 200px; margin: 0 auto; display: block; margin-bottom: 10px;">
+                        <p style="font-size: 14px;">ID de la Compra: ${venta.trackingNumber}</p>
+                        <div style="margin-top: 20px;">
+                            <a href="https://austins.vercel.app/portal/track/${venta.trackingNumber}" style="background-color: #007bff; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; margin-left: 10px;">Ir a Seguimiento de Pedido 🚚</a>
+                        </div>
+                        <p style="color: #ff0000; font-size: 16px; margin-top: 20px;">⚠️ Por favor, confirma tu compra o realiza el pago en las próximas 48 horas. De lo contrario, tu compra será cancelada automáticamente.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
 
             await transporter.sendMail({
                 from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',

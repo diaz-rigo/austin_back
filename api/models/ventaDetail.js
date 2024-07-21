@@ -13,7 +13,8 @@ const ventaDetailSchema = mongoose.Schema({
     deliveryDate: { type: Date },
     instrucion: { type: String },
     status: { type: String, required: true, default: 'PENDING' },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    
 }, { versionKey: false });
 
 module.exports = mongoose.model('VentaDetail', ventaDetailSchema);
