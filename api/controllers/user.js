@@ -1,6 +1,32 @@
 const mongoose = require("mongoose");
 const User = require("../models/user");
 
+
+exports.update = (req, res, next) => {
+  const _id = req.params.id;
+  const body = {
+    email: req.body.email,
+    name: req.body.name,
+    paternalLastname: req.body.paternalLastname,
+    maternalLastname: req.body.maternalLastname,
+    rol: req.body.rol,
+    phone: req.body.phone,
+    address: req.body.address,
+    city: req.body.city,
+    postalCode: req.body.postalCode,
+    country: req.body.country,
+    dateOfBirth: req.body.dateOfBirth,
+  };
+  
+  User.findOneAndUpdate({ _id: _id }, { $set: body }, { new: true })
+    .exec()
+    .then((doc) => {
+      res.status(200).json(doc);
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+};
 exports.getAll = (req, res, next) => {
   // console.log(req)
     User.find()
@@ -48,24 +74,6 @@ exports.get = (req, res, next) => {
     });
 };
 
-exports.update = (req, res, next) => {
-    const _id = req.params.id;
-    const body = {
-        email: req.body.email,
-        name: req.body.name,
-        lastname: req.body.lastname,
-        rol: req.body.rol,
-        document: req.body.document
-    };
-    User.findOneAndUpdate({ _id: _id }, { $set: body }, {new: true})
-      .exec()
-      .then(doc => {
-        res.status(200).json(doc);
-      })
-      .catch(err => {
-        res.status(500).json({ error: err });
-      });
-};
 
 exports.delete = (req, res, next) => {
     const _id = req.params.id;
