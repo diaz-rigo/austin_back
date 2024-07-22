@@ -17,7 +17,7 @@ const jwt = require('jsonwebtoken');
 // Configurar variables de entorno
 dotenv.config();
 const PushSubscription = require('../models/pushSubscription'); // Importa el modelo de suscripción push
-
+const Product = require("../models/product");
 // Configurar el transporte de correo
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -450,8 +450,6 @@ exports.crearPedido2 = async (req, res, next) => {
 
 
 
-// const nanoid = require('nanoid');
-
 exports.updateStatusOrder = async (req, res, next) => {
   try {
     const { subscription, paypalOrderId } = req.body;
@@ -488,16 +486,22 @@ exports.updateStatusOrder = async (req, res, next) => {
     const userName = user.name;
 
     ventaDetail.status = 'PAID';
-
+    // Actualizar el stock del producto
+    for (const productDetail of ventaDetail.products) {
+      const product = await Product.findById(productDetail.product);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+      product.quantity -= productDetail.quantity;
+      await product.save();
+    }
     const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_KEY,
       { expiresIn: '24h' } // El token expira en 24 horas
     );
 
-    // // Generar código de seguimiento
-    // const trackingNumber = generarCodigoPedido()// Genera un código único de 10 caracteres
-    // venta.trackingNumber = trackingNumber;
+
 
     const payload = {
       notification: {

@@ -16,6 +16,7 @@ const cloudinary = require('../utils/cloudinary'); // Importa la configuración 
 const jwt = require('jsonwebtoken');
 // Configurar variables de entorno
 dotenv.config();
+const PushSubscription = require('../models/pushSubscription'); // Importa el modelo de suscripción push
 
 // Configurar el transporte de correo
 const transporter = nodemailer.createTransport({
@@ -91,6 +92,15 @@ const enviarNotificacionPush = async (subscription, payload) => {
     throw error;
   }
 };
+const enviarNotificacionPush2 = async (subscription, payload, iduser) => {
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    console.log('Notificación push enviada con éxito');
+  } catch (error) {
+    console.error('Error al enviar notificación push:', error);
+    throw error;
+  }
+};
 
 // Controladores
 
@@ -112,19 +122,19 @@ exports.crearPedido = async (req, res, next) => {
           message: ERROR_USER_ALREADY_EXISTS_ACTIVATE,
         });
       }
-    
+
       const token = jwt.sign(
         { userId: existingUser._id },
         process.env.JWT_KEY,
         { expiresIn: '24h' } // El token expira en 24 horas
       );
-    
+
       // Enviar correo de activación
       const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
       const mailOptionsActivacion = {
         from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
         to: datosPedido.correo,
-        subject: 'Activa tu cuenta en Pastelería Austin\'s',
+        subject: '¡Activa tu cuenta en Pastelería Austin\'s! 🎂🎈🌟',  // Ejemplo de emojis adicionales al asunto
         html: `
           <div style="font-family: Arial, sans-serif; color: #333; background-color: #f8f8f8; padding: 20px; border-radius: 5px;">
             <h2 style="color: #d17a3b; text-align: center;">¡Activa tu cuenta en Pastelería Austin's!</h2>
@@ -136,13 +146,13 @@ exports.crearPedido = async (req, res, next) => {
           </div>
         `,
       };
-    
+
       enviarCorreo(mailOptionsActivacion);
       return res.status(409).json({
         message: ERROR_USER_ALREADY_EXISTS,
       });
     }
-    
+
 
 
     // Crear un nuevo objeto de usuario
@@ -164,7 +174,7 @@ exports.crearPedido = async (req, res, next) => {
     // Generar un código de pedido único
     const codigoPedido = generarCodigoPedido();
 
-    
+
     // Crear un nuevo objeto de pedido y detalle de pedido
     const pedido = new Pedido({
       _id: new mongoose.Types.ObjectId(),
@@ -307,7 +317,7 @@ exports.crearPedido2 = async (req, res, next) => {
   try {
     // Verificar si el usuario ya existe en la base de datos
     const existingUser = await User.findOne({ email: datosPedido.correo });
-     console.log("user___encontrado",existingUser)
+    console.log("user___encontrado", existingUser)
     // Generar un código de pedido único
     const codigoPedido = generarCodigoPedido();
 
@@ -351,6 +361,44 @@ exports.crearPedido2 = async (req, res, next) => {
 
     // Guardar el pedido en la base de datos
     await pedido.save();
+    // Consultar las suscripciones del usuario
+    if (existingUser && existingUser.subscriptions && existingUser.subscriptions.length > 0) {
+      for (const subscriptionId of existingUser.subscriptions) {
+        // Buscar la suscripción en la base de datos
+        const subscription = await PushSubscription.findById(subscriptionId);
+        if (subscription) {
+          // Preparar y enviar la notificación push
+          const payload = {
+            notification: {
+              title: 'Seguimiento de tu Pedido 🍰',
+              body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
+              icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
+              vibrate: [200, 100, 200],
+              sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
+              priority: 'high',
+              data: {
+                url: "https://austins.vercel.app" // Enlace al sitio o aplicación
+              },
+              actions: [
+                { action: "ver_pedido", title: "Ver Pedido" },
+              ],
+              expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
+              timeToLive: 28 * 86400, // Tiempo de vida en segundos
+              silent: false // No silenciar
+            }
+          };
+
+          try {
+            // Envío de la notificación push
+            await enviarNotificacionPush2(subscription, payload, existingUser._id);
+            console.log('Notificación push enviada exitosamente');
+          } catch (error) {
+            console.error('Error al enviar la notificación push:', error);
+            // Manejar el error de manera adecuada
+          }
+        }
+      }
+    }
 
     // Enviar notificación por correo y mensaje de notificación si es la primera vez del usuario
     if (!existingUser) {
@@ -384,37 +432,7 @@ exports.crearPedido2 = async (req, res, next) => {
       // Envío de correo electrónico
       await enviarCorreo(mailOptionsSeguimiento);
 
-      // Enviar notificación push si se proporciona una suscripción
-      if (datosPedido.suscripcion) {
-        const payload = {
-          notification: {
-            title: 'Seguimiento de tu Pedido 🍰',
-            body: `¡Tu pedido ha sido solicitado! Sigue el estado con el código: ${codigoPedido} 🎉`,
-            icon: "https://static.wixstatic.com/media/64de7c_4d76bd81efd44bb4a32757eadf78d898~mv2_d_1765_2028_s_2.png",
-            vibrate: [200, 100, 200],
-            sound: 'https://res.cloudinary.com/dfd0b4jhf/video/upload/v1710830978/sound/kjiefuwbjnx72kg7ouhb.mp3',
-            priority: 'high',
-            data: {
-              url: "https://austins.vercel.app" // Enlace al sitio o aplicación
-            },
-            actions: [
-              { action: "ver_pedido", title: "Ver Pedido" },
-            ],
-            expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // Expira en 28 días
-            timeToLive: 28 * 86400, // Tiempo de vida en segundos
-            silent: false // No silenciar
-          }
-        };
-
-        try {
-          // Envío de la notificación push
-          await enviarNotificacionPush(datosPedido.suscripcion, payload);
-          console.log('Notificación push enviada exitosamente');
-        } catch (error) {
-          console.error('Error al enviar la notificación push:', error);
-          // Manejar el error de manera adecuada
-        }
-      }
+  
     }
 
     res.status(201).json({
@@ -431,8 +449,6 @@ exports.crearPedido2 = async (req, res, next) => {
 };
 
 
-
-// const nanoid = require('nanoid');
 
 exports.updateStatusOrder = async (req, res, next) => {
   try {
@@ -470,16 +486,14 @@ exports.updateStatusOrder = async (req, res, next) => {
     const userName = user.name;
 
     ventaDetail.status = 'PAID';
-    
+
     const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_KEY,
       { expiresIn: '24h' } // El token expira en 24 horas
     );
-  
-    // // Generar código de seguimiento
-    // const trackingNumber = generarCodigoPedido()// Genera un código único de 10 caracteres
-    // venta.trackingNumber = trackingNumber;
+
+
 
     const payload = {
       notification: {
@@ -494,8 +508,8 @@ exports.updateStatusOrder = async (req, res, next) => {
 
     // Envío de notificación push
     await enviarNotificacionPush(subscription, payload);
-      // Enviar correo de activación
-      const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
+    // Enviar correo de activación
+    const activationLink = `https://austins.vercel.app/auth/activate/${token}`;
     const mailOptionsSeguimiento = {
       from: '"Pastelería Austin\'s" <austins0271142@gmail.com>',
       to: userEmail,
