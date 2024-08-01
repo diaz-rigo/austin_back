@@ -119,86 +119,119 @@ exports.deleteImage = async (req, res, next) => {
 
 
 
-exports.updateImage = async (req, res, next) => {
+// exports.updateImage = async (req, res, next) => {
+//   try {
+//     const _id = req.params.id;
+//     const category = req.params.category;
+    
+//     // Utiliza await para esperar la resolución de la promesa
+//     const response = await Product.findById(_id).exec();
+//     console.log('product find', response);
+
+//     if (!response) {
+//       return res.status(404).json({ message: "Error: Product not found" });
+//     }
+
+//     let images = response.images;
+
+//     console.log('find', images);
+//     console.log(`req.position: ${req.body.position}, req.file: ${req.file.originalname}`);
+//     console.log('carpeta', req.file.path);
+
+//     if (req.body.position === 0 || (req.body.position && req.file)) {
+//       // const result = await cloudinary.uploader.upload(req.file.path, {
+//       //   folder: `${category}/${_id}`,
+//       //   public_id: req.file.originalname
+//       // });
+//       const path = require('path');
+
+//       // Dentro de tu función updateImage antes de cargar en Cloudinary
+//       const fileName = path.parse(req.file.originalname).name;
+//       const result = await cloudinary.uploader.upload(req.file.path, {
+//         folder: `${category}/${_id}`,
+//         public_id: fileName // Usar el nombre de archivo sin la extensión
+//       });
+
+
+//       // Elimina la imagen temporal del servidor
+//       fs.unlinkSync(req.file.path);
+
+//       const cloudinaryUrl = result.secure_url;
+//       const body = {
+//         position: req.body.position,
+//         image: cloudinaryUrl
+//       };
+
+//       if (images.length > body.position) {
+//         console.log('if', images);
+//         images[body.position] = body.image;
+//       } else {
+//         console.log('else', images);
+//         images.push(body.image);
+//       }
+//     } else {
+//       return res.status(400).json({ message: "Error: Invalid request" });
+//     }
+
+//     console.log('set', images);
+
+//     // Utiliza await para esperar la resolución de la actualización
+//     const updatedProduct = await Product.findOneAndUpdate(
+//       { _id: _id },
+//       { $set: { images: images } },
+//       { new: true }
+//     ).exec();
+
+//     console.log('update', images);
+
+//     res.status(200).json({
+//       image: updatedProduct
+//     });
+//   } catch (error) {
+//     console.error('Error:', error);
+//     res.status(500).json({ error: error.message || "Internal Server Error" });
+//   }
+// }
+
+exports.uploadImagesToCloudinary = async (req, res) => {
   try {
-    const _id = req.params.id;
     const category = req.params.category;
 
-    // Utiliza await para esperar la resolución de la promesa
-    const response = await Product.findById(_id).exec();
-    console.log('product find', response);
-
-    if (!response) {
-      return res.status(404).json({ message: "Error: Product not found" });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No se han enviado imágenes.' });
     }
 
-    let images = response.images;
+    const uploadedImages = [];
+    const uploadPromises = req.files.map(async (file) => {
+      try {
+        const result = await cloudinary.uploader.upload(file.path, { folder: `${category}` });
+        uploadedImages.push(result.secure_url);
 
-    console.log('find', images);
-    console.log(`req.position: ${req.body.position}, req.file: ${req.file.originalname}`);
-    console.log('carpeta', req.file.path);
-
-    if (req.body.position === 0 || (req.body.position && req.file)) {
-      // const result = await cloudinary.uploader.upload(req.file.path, {
-      //   folder: `${category}/${_id}`,
-      //   public_id: req.file.originalname
-      // });
-      const path = require('path');
-
-      // Dentro de tu función updateImage antes de cargar en Cloudinary
-      const fileName = path.parse(req.file.originalname).name;
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: `${category}/${_id}`,
-        public_id: fileName // Usar el nombre de archivo sin la extensión
-      });
-
-
-      // Elimina la imagen temporal del servidor
-      fs.unlinkSync(req.file.path);
-
-      const cloudinaryUrl = result.secure_url;
-      const body = {
-        position: req.body.position,
-        image: cloudinaryUrl
-      };
-
-      if (images.length > body.position) {
-        console.log('if', images);
-        images[body.position] = body.image;
-      } else {
-        console.log('else', images);
-        images.push(body.image);
+        // Elimina el archivo temporal después de subirlo
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      } catch (error) {
+        console.error(`Error al subir ${file.originalname}:`, error);
+        throw error; // Lanza el error para que se capture en el bloque de captura principal
       }
-    } else {
-      return res.status(400).json({ message: "Error: Invalid request" });
-    }
-
-    console.log('set', images);
-
-    // Utiliza await para esperar la resolución de la actualización
-    const updatedProduct = await Product.findOneAndUpdate(
-      { _id: _id },
-      { $set: { images: images } },
-      { new: true }
-    ).exec();
-
-    console.log('update', images);
-
-    res.status(200).json({
-      image: updatedProduct
     });
+
+    await Promise.all(uploadPromises);
+    res.status(201).json({ images: uploadedImages });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: error.message || "Internal Server Error" });
+    console.error('Error al subir imágenes a Cloudinary:', error);
+    res.status(500).json({ message: 'Ocurrió un error al subir las imágenes.', error });
   }
-}
-
-
-
-
+};
 
 exports.getAll = (req, res, next) => {
-  Product.find({ status: "ACTIVE" })
+  Product.find({
+    $or: [
+      { status: "ACTIVE" },
+      { status: "true" }
+    ]
+  })
     .exec()
     .then(docs => {
       res.status(200).json(docs);
@@ -225,8 +258,8 @@ exports.get = (req, res, next) => {
     });
 };
 
-
-exports.create = (req, res, next) => {
+exports.create = (req, res) => {
+  console.log(req.body)
   const product = new Product({
     _id: new mongoose.Types.ObjectId(),
     sku: req.body.sku,
@@ -237,7 +270,7 @@ exports.create = (req, res, next) => {
     model: req.body.model,
     quantity: req.body.quantity,
     price: req.body.price,
-    category: req.body.category,
+    category: req.body.category.title,
     maker: req.body.maker,
     images: req.body.images || [],
     status: 'ACTIVE',
@@ -256,10 +289,10 @@ exports.create = (req, res, next) => {
       res.status(201).json(result);
     })
     .catch(err => {
+      console.log(err)
       res.status(500).json({ error: err });
     });
 };
-
 
 
 

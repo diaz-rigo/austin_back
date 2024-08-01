@@ -80,6 +80,10 @@
                         "Quiero comprar",
                         "Confirmar pedido"
                     ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
                 }
             ],
             "types": []

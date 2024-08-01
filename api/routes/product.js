@@ -9,8 +9,10 @@ router.get("/:id", ProductController.get);
 router.put("/:id", ProductController.update);
 router.delete("/:id", ProductController.delete);
 
-router.put("/:category/:id/image", upload.single('image'), ProductController.updateImage);
+// router.put("/:category/:id/image", upload.single('image'), ProductController.updateImage);
 
+// router.post("/:category/images", upload.single('images'), ProductController.uploadImagesToCloudinary);
+router.post('/:category/images', upload.array('images', 10), ProductController.uploadImagesToCloudinary);
 
 
 
