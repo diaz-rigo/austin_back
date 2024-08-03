@@ -95,7 +95,7 @@ exports.estadisticas = async (req, res, next) => {
                 },
                 ventasCompletadas: {
                     $sum: {
-                        $cond: [{ $eq: ["$status", "COMPLETED"] }, 1, 0]
+                        $cond: [{ $eq: ["$status", "PAID"] }, 1, 0]
                     }
                 }
             }
