@@ -8,5 +8,6 @@ router.get("/ventas", AdminReport.consultaventas);
 router.get('/estadisticas', AdminReport.estadisticas);
 router.get('/estadisticas_pedidos', AdminReport.estadisticas_pedidos);
 router.get('/estadisticas_user', AdminReport.estadisticas_user);
+router.get('/estadisticas_product', AdminReport.estadisticas_product);
 
 module.exports = router;

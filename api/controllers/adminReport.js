@@ -10,7 +10,7 @@ const Pedido = require('../models/order');
 const PedidoDetalle = require('../models/orderDetail');
 const VentaDetail = require("../models/ventaDetail");
 const Venta = require("../models/ventaSchema");
-
+const Product = require("../models/product");
 // Configurar variables de entorno
 dotenv.config();
 
@@ -136,7 +136,6 @@ exports.estadisticas_pedidos = async (req, res, next) => {
   }
 };
 
-// const User = require('../models/user');
 
 exports.estadisticas_user= async (req, res, next) => {
   try {
@@ -174,6 +173,55 @@ exports.estadisticas_user= async (req, res, next) => {
     res.status(200).json({
         usuariosTotales: usuariosTotales[0],
         rolesCount: rolesCount
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+exports.estadisticas_product = async (req, res, next) => {
+  try {
+    const productosTotales = await Product.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalProductos: { $sum: 1 },
+                productosDestacados: {
+                    $sum: {
+                        $cond: [{ $eq: ["$isFeatured", true] }, 1, 0]
+                    }
+                },
+                productosVegetarianos: {
+                    $sum: {
+                        $cond: [{ $eq: ["$isVegetarian", true] }, 1, 0]
+                    }
+                },
+                productosSinGluten: {
+                    $sum: {
+                        $cond: [{ $eq: ["$isGlutenFree", true] }, 1, 0]
+                    }
+                },
+                categorias: {
+                    $push: "$category"
+                }
+            }
+        }
+    ]);
+
+    const categoriasCount = await Product.aggregate([
+        {
+            $group: {
+                _id: "$category",
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        productosTotales: productosTotales[0],
+        categoriasCount: categoriasCount
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
