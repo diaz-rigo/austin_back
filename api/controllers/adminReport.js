@@ -80,16 +80,102 @@ exports.consultaventas = async (req, res, next) => {
   }
 };
 
-// exports.consultaventas = async (req, res, next) => {
-//   try {
-//     // Realizar la consulta a la base de datos para obtener todas las ventas
-//     const ventas = await VentaDetail.find();
+exports.estadisticas = async (req, res, next) => {
+  try {
+    const ventasTotales = await VentaDetail.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalVentas: { $sum: "$totalAmount" },
+                totalPedidos: { $sum: 1 },
+                ventasPendientes: {
+                    $sum: {
+                        $cond: [{ $eq: ["$status", "PENDING"] }, 1, 0]
+                    }
+                },
+                ventasCompletadas: {
+                    $sum: {
+                        $cond: [{ $eq: ["$status", "COMPLETED"] }, 1, 0]
+                    }
+                }
+            }
+        }
+    ]);
 
-//     // Devolver las ventas como respuesta al cliente
-//     res.status(200).json({ ventas });
-//   } catch (error) {
-//     // Manejar cualquier error que ocurra durante la consulta
-//     console.error("Error al consultar las ventas:", error);
-//     res.status(500).json({ error: "Error al consultar las ventas" });
-//   }
-// };
+    res.status(200).json(ventasTotales[0]);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.estadisticas_pedidos = async (req, res, next) => {
+  try {
+    const pedidosTotales = await Pedido.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalPedidos: { $sum: 1 },
+                pedidosPendientes: {
+                    $sum: {
+                        $cond: [{ $eq: ["$estadoPedido", "Pendiente"] }, 1, 0]
+                    }
+                },
+                pedidosCompletados: {
+                    $sum: {
+                        $cond: [{ $eq: ["$estadoPedido", "completado"] }, 1, 0]
+                    }
+                },
+                totalAmount: { $sum: "$precioTotal" }
+            }
+        }
+    ]);
+
+    res.status(200).json(pedidosTotales[0]);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// const User = require('../models/user');
+
+exports.estadisticas_user= async (req, res, next) => {
+  try {
+    const usuariosTotales = await User.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalUsuarios: { $sum: 1 },
+                usuariosActivos: {
+                    $sum: {
+                        $cond: [{ $eq: ["$status", "ACTIVE"] }, 1, 0]
+                    }
+                },
+                usuariosInactivos: {
+                    $sum: {
+                        $cond: [{ $eq: ["$status", "INACTIVE"] }, 1, 0]
+                    }
+                },
+                roles: {
+                    $push: "$rol"
+                }
+            }
+        }
+    ]);
+
+    const rolesCount = await User.aggregate([
+        {
+            $group: {
+                _id: "$rol",
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        usuariosTotales: usuariosTotales[0],
+        rolesCount: rolesCount
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
