@@ -97,7 +97,11 @@ exports.estadisticas = async (req, res, next) => {
                     $sum: {
                         $cond: [{ $eq: ["$status", "PAID"] }, 1, 0]
                     }
-                }
+                }, ventasExpirados: {
+                  $sum: {
+                      $cond: [{ $eq: ["$status", "EXPIRED"] }, 1, 0]
+                  }
+              }
             }
         }
     ]);
