@@ -24,6 +24,7 @@ const PUBLICREPORT = require('./api/routes/publicReport');
 const alexa = require('./api/routes/alexa');
 const Review = require('./api/routes/review');
 const modelo = require('./api/routes/model');
+const contact= require('./api/routes/contactRoutes');
 
 const url = 'mongodb+srv://20211036:' +  process.env.MONGO_ATLAS_PW   + '@cluster0.6qjq7cq.mongodb.net/'
     mongoose.connect(url, {
@@ -71,6 +72,7 @@ app.use('/publicR', PUBLICREPORT);
 app.use('/alexa', alexa);
 app.use('/review', Review);
 app.use('/modelo', modelo);
+app.use('/contact', contact);
 
 app.use((req, res, next) => {
     const error = new Error(' error Not found 12 01 2024');
