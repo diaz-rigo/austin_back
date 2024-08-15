@@ -31,7 +31,7 @@ exports.createSubscription2 = (req, res, next) => {
                 return User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: existingSubscription._id } })
                     .then(() => {
                            // Enviar la notificación de inicio de sesión
-                        enviarNotificacionLogeo(subscription);
+                        // enviarNotificacionLogeo(subscription);
                         res.status(200).json({ message: 'Subscription already exists', subscriptionId: existingSubscription._id });
                     });
             } else {
@@ -48,7 +48,7 @@ exports.createSubscription2 = (req, res, next) => {
                         return User.findByIdAndUpdate(userId, { $addToSet: { subscriptions: savedSubscription._id } })
                             .then(() => {
                                 // Enviar la notificación de inicio de sesión
-                                enviarNotificacionLogeo(subscription);
+                                // enviarNotificacionLogeo(subscription);
                                 res.status(201).json({ message: 'Subscription created successfully', subscriptionId: savedSubscription._id });
                             });
                     });
