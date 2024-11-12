@@ -17,10 +17,11 @@ const generarCodigoPedido = () => {
 
   return codigoPedido;
 };
+
 exports.createSession = async (req, res) => {
   try {
     const { totalneto, tipoEntrega, dateselect, productos, datoscliente, instruction, success_url, cancel_url } = req.body;
-
+    console.log(req.body)
     const isValidURL = (string) => {
       try {
         new URL(string);
@@ -116,6 +117,106 @@ exports.createSession = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+exports.createSessionflutter = async (req, res) => {
+  try {
+    const { totalneto, tipoEntrega, dateselect, productos, datoscliente, instruction, success_url, cancel_url } = req.body;
+    console.log(req.body);
+
+    const isValidURL = (string) => {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    };
+
+    const line_items = productos.map(producto => {
+      if (!isValidURL(producto.imageUrl)) {
+        throw new Error(`URL de imagen no válida: ${producto.imageUrl}`);
+      }
+
+      return {
+        price_data: {
+          currency: 'mxn',
+          product_data: {
+            name: producto.name,
+            images: [producto.imageUrl],  // Ajuste aquí a "imageUrl"
+          },
+          unit_amount: producto.price * 100, // Ajuste aquí a "price"
+        },
+        quantity: producto.quantity, // Ajuste aquí a "quantity"
+      };
+    });
+
+    console.log('Detalles de line_items:', JSON.stringify(line_items, null, 2));
+
+    const customerName = `${datoscliente.name} ${datoscliente.paternalLastname} ${datoscliente.maternalLastname}`;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: "payment",
+      line_items,
+      success_url: success_url + "?token={CHECKOUT_SESSION_ID}", // Usa success_url y cancel_url del req.body
+      cancel_url: cancel_url,
+      customer_email: datoscliente.email,
+      metadata: {
+        tipoEntrega,
+        dateselect,
+        instruction,
+        empresa: "Austins",
+      },
+    });
+
+    let user = await User.findOne({ email: datoscliente.email });
+
+    if (!user) {
+      user = new User({
+        _id: new mongoose.Types.ObjectId(),
+        name: datoscliente.name,
+        paternalLastname: datoscliente.paternalLastname,
+        maternalLastname: datoscliente.maternalLastname,
+        phone: datoscliente.phone,
+        email: datoscliente.email,
+        rol: 'GUEST',
+        password: 'contraseñaPorDefecto',
+      });
+      await user.save();
+    }
+
+    const ventaDetail = new VentaDetail({
+      _id: new mongoose.Types.ObjectId(),
+      user: user._id,
+      products: productos.map(producto => ({
+        product: producto.id,
+        quantity: producto.quantity, // Ajuste aquí a "quantity"
+      })),
+      totalAmount: totalneto,
+      deliveryType: tipoEntrega,
+      deliveryDate: dateselect,
+      instruction: instruction,
+      status: 'PENDING',
+    });
+    await ventaDetail.save();
+
+    const venta = new Venta({
+      _id: new mongoose.Types.ObjectId(),
+      user: user._id,
+      details: ventaDetail._id,
+      totalAmount: totalneto,
+      stripeSessionID: session.id,
+      trackingNumber: generarCodigoPedido()
+    });
+    await venta.save();
+
+    return res.json({ url: session.url });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
 exports.createSession2 = async (req, res) => {
   try {
     const { totalneto, tipoEntrega, dateselect, productos, datoscliente, instruction, codigoDeSeguimiento, cancel_url } = req.body;

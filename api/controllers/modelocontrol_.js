@@ -1,8 +1,5 @@
 
 const clientView = require('../models/modelo');
-// controllers/orderController.js
-// const clientView = require('../models/clientView');
-// const clientView = require('../models/clientView');
 
 exports.getAllOrders = async (req, res) => {
   try {
