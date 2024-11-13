@@ -254,7 +254,7 @@ exports.createSession2 = async (req, res) => {
       payment_method_types: ['card'],
       mode: "payment",
       line_items,
-      success_url: "https://austins.vercel.app/payment/order-success?token={CHECKOUT_SESSION_ID}",
+      success_url: "https://austins-pwa.vercel.app/payment/order-success?token={CHECKOUT_SESSION_ID}",
       cancel_url: cancel_url,
       customer_email: datoscliente.email,
       metadata: {
