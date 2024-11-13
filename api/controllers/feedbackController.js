@@ -26,3 +26,27 @@ exports.createFeedback = async (req, res) => {
     res.status(500).json({ message: 'Error al guardar el feedback', error });
   }
 };
+
+// Obtener todos los feedbacks y calcular promedios para graficar
+exports.getFeedbackStats = async (req, res) => {
+  try {
+    // Obtener todos los feedbacks
+    const feedbacks = await Feedback.find();
+
+    // Calcular promedios
+    const totalFeedbacks = feedbacks.length;
+    const averageScores = {
+      npsScore: feedbacks.reduce((sum, feedback) => sum + feedback.npsScore, 0) / totalFeedbacks,
+      easeOfUse: feedbacks.reduce((sum, feedback) => sum + feedback.easeOfUse, 0) / totalFeedbacks,
+      satisfaction: feedbacks.reduce((sum, feedback) => sum + feedback.satisfaction, 0) / totalFeedbacks
+    };
+
+    res.status(200).json({
+      totalFeedbacks,
+      averageScores,
+      feedbacks
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error obteniendo feedbacks', error });
+  }
+};
