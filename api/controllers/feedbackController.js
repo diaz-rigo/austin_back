@@ -8,7 +8,7 @@ exports.createFeedback = async (req, res) => {
 
     // Validar datos obligatorios
     if (!datosCliente?.name || !datosCliente?.email || npsScore == null || easeOfUse == null || satisfaction == null) {
-      return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
+      return res.status(400).json({ message: 'Todos los campos son obligatorios.'+ req.body});
     }
 
     // Crear el feedback en la base de datos
