@@ -5,7 +5,7 @@ const Feedback = require('../models/Feedback');
 exports.createFeedback = async (req, res) => {
   try {
     const { datosCliente, npsScore, easeOfUse, satisfaction } = req.body;
-
+    console.log( req.body)
     // Validar datos obligatorios
     if (!datosCliente?.name || !datosCliente?.email || npsScore == null || easeOfUse == null || satisfaction == null) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios.'+ req.body});
