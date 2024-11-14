@@ -16,7 +16,7 @@ exports.createFeedback = async (req, res) => {
       datosCliente,
       npsScore,
       easeOfUse,
-      satisfaction
+      satisfaction  
     });
     await feedback.save();
 
