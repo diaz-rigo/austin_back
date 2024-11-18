@@ -89,3 +89,22 @@ exports.delete = (req, res, next) => {
         });
 };
 
+exports.getUserByEmail = async (req, res) => {
+  const email = req.params.email;
+
+  try {
+      // Buscar al usuario por correo electrónico
+      const user = await User.findOne({ email: email });
+
+      // Si no se encuentra el usuario, retornar un error 404
+      if (!user) {
+          return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+
+      // Retornar los datos del usuario
+      res.status(200).json(user);
+  } catch (error) {
+      // Manejo de errores
+      res.status(500).json({ message: 'Error al obtener el usuario', error: error.message });
+  }
+};
