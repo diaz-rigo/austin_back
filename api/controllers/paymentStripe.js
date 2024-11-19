@@ -157,8 +157,8 @@ exports.createSessionflutter = async (req, res) => {
       payment_method_types: ['card'],
       mode: "payment",
       line_items,
-      success_url: success_url + "?token={CHECKOUT_SESSION_ID}", // Usa success_url y cancel_url del req.body
-      cancel_url: cancel_url,
+      success_url: "austinsapp://checkout/success",  // Enlace personalizado de éxito
+      cancel_url: "austinsapp://checkout/cancel",    // Enlace personalizado de cancelación    
       customer_email: datoscliente.email,
       metadata: {
         tipoEntrega,
@@ -167,6 +167,20 @@ exports.createSessionflutter = async (req, res) => {
         empresa: "Austins",
       },
     });
+    // const session = await stripe.checkout.sessions.create({
+    //   payment_method_types: ['card'],
+    //   mode: "payment",
+    //   line_items,
+    //   success_url: success_url + "?token={CHECKOUT_SESSION_ID}", // Usa success_url y cancel_url del req.body
+    //   cancel_url: cancel_url,
+    //   customer_email: datoscliente.email,
+    //   metadata: {
+    //     tipoEntrega,
+    //     dateselect,
+    //     instruction,
+    //     empresa: "Austins",
+    //   },
+    // });
 
     let user = await User.findOne({ email: datoscliente.email });
 
